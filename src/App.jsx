@@ -4,16 +4,7 @@
     import { Toaster } from '@/components/ui/toaster';
     import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
     import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-    import MainLayout from '@/layouts/MainLayout';
-    import LoginPage from '@/pages/LoginPage';
-    import RegisterPage from '@/pages/RegisterPage';
-    import DashboardPage from '@/pages/DashboardPage';
-    import DocumentsPage from '@/pages/DocumentsPage';
-    import AIAssistantPage from '@/pages/AIAssistantPage';
-    import BillingPage from '@/pages/BillingPage';
-    import AccountSettingsPage from '@/pages/AccountSettingsPage';
-    import AdminPage from '@/pages/AdminPage';
-    import NotFoundPage from '@/pages/NotFoundPage';
+    import AppRoutes from '@/routes';
 
     function ProtectedRoute({ children }) {
       const { isAuthenticated } = useAuth();
@@ -32,27 +23,7 @@
 
       return (
         <>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route 
-              path="/" 
-              element={
-                <ProtectedRoute>
-                  <MainLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="documents" element={<DocumentsPage />} />
-              <Route path="ai-assistant" element={<AIAssistantPage />} />
-              <Route path="billing" element={<BillingPage />} />
-              <Route path="settings" element={<AccountSettingsPage />} />
-              <Route path="admin" element={<AdminPage />} /> {/* Basic Admin route */}
-            </Route>
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          <AppRoutes />
           <Toaster />
         </>
       );

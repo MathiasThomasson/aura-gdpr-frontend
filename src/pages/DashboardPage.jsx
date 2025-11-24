@@ -5,6 +5,7 @@
     import { CheckCircle, AlertTriangle, XCircle, FilePlus, BarChart3, ListChecks } from 'lucide-react';
     import { useAuth } from '@/contexts/AuthContext';
     import { motion } from 'framer-motion';
+    import HealthStatus from '@/components/HealthStatus';
 
     const StatCard = ({ title, value, icon, color, description }) => (
       <motion.div
@@ -55,8 +56,15 @@
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">Welcome back, {user?.name || 'User'}!</h1>
-            <p className="text-lg text-muted-foreground">Here's your AURA GDPR compliance overview.</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight text-foreground">Welcome back, {user?.name || 'User'}!</h1>
+                <p className="text-lg text-muted-foreground">Here's your AURA GDPR compliance overview.</p>
+              </div>
+              <div className="ml-6">
+                <HealthStatus />
+              </div>
+            </div>
           </motion.div>
 
           <motion.div 
