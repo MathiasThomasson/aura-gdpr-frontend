@@ -26,6 +26,7 @@ type AuthContextValue = {
   accessToken: string | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<User | undefined>;
+  register: (email: string, password: string) => Promise<User | undefined>;
   logout: () => void;
 };
 
@@ -107,12 +108,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [navigate, setSession, toast]
   );
 
+  const register = useCallback(
+    async (email: string, password: string) => {
+      const res = await api.post<AuthResponse>('/auth/register', { email, password });
+      const { tokens, user: nextUser } = mapAuthResponse(res.data);
+      setSession(tokens, nextUser);
+      toast({ title: 'Registration Successful', description: 'Your account has been created.' });
+      navigate('/app/dashboard', { replace: true });
+      return nextUser;
+    },
+    [navigate, setSession, toast]
+  );
+
   const logout = useCallback(() => {
     triggerLogout();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isAuthenticated, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

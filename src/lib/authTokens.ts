@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { clearTokens, clearUser, setTokens, setUser, getUser, StoredUser } from './tokenStorage';
+import { apiBaseUrl } from './apiConfig';
 
 export type User = StoredUser;
 
@@ -13,8 +14,6 @@ export type AuthTokens = {
   accessToken: string;
   refreshToken: string;
 };
-
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 let logoutHandler: (() => void) | null = null;
 
@@ -42,7 +41,7 @@ export const mapAuthResponse = (payload: AuthResponse): { tokens: AuthTokens; us
 
 export const refreshAuthTokens = async (refreshToken: string): Promise<AuthResponse> => {
   const res = await axios.post<AuthResponse>(
-    `${baseURL}/auth/refresh`,
+    `${apiBaseUrl}/auth/refresh`,
     { refresh_token: refreshToken },
     { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
   );

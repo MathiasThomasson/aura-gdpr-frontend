@@ -1,13 +1,12 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { getAccessToken, getRefreshToken, setTokens, clearTokens, clearUser } from './tokenStorage';
 import { refreshAuthTokens, triggerLogout, mapAuthResponse } from './authTokens';
+import { apiBaseUrl } from './apiConfig';
 
 export type HealthResponse = { status: string; [key: string]: unknown };
 
-const baseURL = import.meta.env.VITE_API_BASE_URL ?? '';
-
 const api: AxiosInstance = axios.create({
-  baseURL,
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },
