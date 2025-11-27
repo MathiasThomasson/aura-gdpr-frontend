@@ -5,7 +5,7 @@ import Topbar from './Topbar';
 
 const AppLayout: React.FC = () => {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar />

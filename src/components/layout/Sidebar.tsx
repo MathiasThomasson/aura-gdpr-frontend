@@ -1,16 +1,34 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, ClipboardList, Activity, Settings } from 'lucide-react';
+import { Home, FileText, Zap, CreditCard, Settings, ShieldCheck, CheckSquare, Briefcase, ClipboardList, FileSignature, ShieldAlert, Inbox } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { name: 'Dashboard', icon: Home, path: '/app/dashboard' },
-  { name: 'Processing Activities', icon: ClipboardList, path: '/app/processing' },
-  { name: 'Tasks', icon: Activity, path: '/app/tasks' },
-  { name: 'Audit Log', icon: FileText, path: '/app/audit-log' },
+  { name: 'Documents', icon: FileText, path: '/app/documents' },
+  { name: 'AI Assistant', icon: Zap, path: '/app/ai-assistant' },
+  { name: 'Tasks', icon: CheckSquare, path: '/app/tasks' },
+  { name: 'Projects', icon: Briefcase, path: '/app/projects' },
+  { name: 'Audit Log', icon: ClipboardList, path: '/app/audit' },
+  { name: 'Risk Matrix', icon: ShieldAlert, path: '/app/risk-matrix' },
+  { name: 'Data Subject Requests', icon: Inbox, path: '/app/dsr' },
+  { name: 'DPIA', icon: FileSignature, path: '/app/dpia' },
+  { name: 'Policies', icon: FileText, path: '/app/policies' },
+  { name: 'Billing', icon: CreditCard, path: '/app/billing' },
   { name: 'Settings', icon: Settings, path: '/app/settings' },
 ];
 
 const Sidebar: React.FC = () => {
+  const { user } = useAuth() as { user?: { role?: string } };
+  const isAdmin = user?.role === 'Admin';
+
+  const items = React.useMemo(() => {
+    if (isAdmin) {
+      return [...navItems, { name: 'Admin', icon: ShieldCheck, path: '/app/admin' }];
+    }
+    return navItems;
+  }, [isAdmin]);
+
   return (
     <aside className="w-64 p-6 bg-white dark:bg-slate-800 border-r border-border h-screen">
       <div className="mb-8">
@@ -20,7 +38,7 @@ const Sidebar: React.FC = () => {
       </div>
       <nav>
         <ul className="space-y-2">
-          {navItems.map((item) => (
+          {items.map((item) => (
             <li key={item.name}>
               <NavLink
                 to={item.path}

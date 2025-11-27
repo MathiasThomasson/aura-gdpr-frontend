@@ -2,7 +2,6 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
-import MainLayout from '@/layouts/MainLayout';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import DocumentsPage from '@/pages/DocumentsPage';
@@ -10,6 +9,17 @@ import AIAssistantPage from '@/pages/AIAssistantPage';
 import BillingPage from '@/pages/BillingPage';
 import AccountSettingsPage from '@/pages/AccountSettingsPage';
 import AdminPage from '@/pages/AdminPage';
+import TasksPage from '@/pages/TasksPage';
+import ProjectsPage from '@/pages/ProjectsPage';
+import AuditPage from '@/pages/AuditPage';
+import RiskMatrixPage from '@/pages/RiskMatrixPage';
+import DpiaPage from '@/pages/DpiaPage';
+import DsrPage from '@/pages/DsrPage';
+import DsrPortalPage from '@/pages/DsrPortalPage';
+import AdminDsrPortalSettingsPage from '@/pages/AdminDsrPortalSettingsPage';
+import NotificationSettingsPage from '@/pages/NotificationSettingsPage';
+import PoliciesPage from '@/pages/PoliciesPage';
+import IncidentsPage from '@/pages/IncidentsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -21,6 +31,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const AppRoutes = () => (
   <Routes>
+    <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+    <Route path="/dsr-portal" element={<DsrPortalPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route
@@ -35,26 +47,19 @@ const AppRoutes = () => (
       <Route path="dashboard" element={<DashboardPage />} />
       <Route path="documents" element={<DocumentsPage />} />
       <Route path="ai-assistant" element={<AIAssistantPage />} />
+      <Route path="tasks" element={<TasksPage />} />
+      <Route path="projects" element={<ProjectsPage />} />
+      <Route path="audit" element={<AuditPage />} />
+      <Route path="risk-matrix" element={<RiskMatrixPage />} />
+      <Route path="dsr" element={<DsrPage />} />
+      <Route path="dpia" element={<DpiaPage />} />
+      <Route path="policies" element={<PoliciesPage />} />
+      <Route path="incidents" element={<IncidentsPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="settings" element={<AccountSettingsPage />} />
+      <Route path="settings/notifications" element={<NotificationSettingsPage />} />
       <Route path="admin" element={<AdminPage />} />
-    </Route>
-    {/* keep old root-based paths too */}
-    <Route
-      path="/"
-      element={
-        <ProtectedRoute>
-          <MainLayout />
-        </ProtectedRoute>
-      }
-    >
-      <Route index element={<Navigate to="/dashboard" replace />} />
-      <Route path="dashboard" element={<DashboardPage />} />
-      <Route path="documents" element={<DocumentsPage />} />
-      <Route path="ai-assistant" element={<AIAssistantPage />} />
-      <Route path="billing" element={<BillingPage />} />
-      <Route path="settings" element={<AccountSettingsPage />} />
-      <Route path="admin" element={<AdminPage />} />
+      <Route path="admin/dsr-portal" element={<AdminDsrPortalSettingsPage />} />
     </Route>
     <Route path="*" element={<NotFoundPage />} />
   </Routes>
