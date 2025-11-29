@@ -24,20 +24,19 @@ const bytesToSize = (bytes?: number) => {
 };
 
 const DocumentsPage: React.FC = () => {
-  const { data: documents, loading, error, reload } = useDocuments();
+  const { data, loading, error, reload } = useDocuments();
   const { upload, uploading, error: uploadError } = useUploadDocument();
   const { toast } = useToast();
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const documentsList = useMemo(() => {
-    if (Array.isArray(documents)) return documents;
-    if (documents && typeof documents === 'object') {
-      const maybe = documents as any;
-      if (Array.isArray(maybe.documents)) return maybe.documents;
-      if (Array.isArray(maybe.items)) return maybe.items;
-    }
+  const raw = data ?? (data as any) ?? null;
+  const documents = useMemo(() => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw as any[];
+    if (Array.isArray((raw as any)?.documents)) return (raw as any).documents as any[];
+    if (Array.isArray((raw as any)?.items)) return (raw as any).items as any[];
     return [];
-  }, [documents]);
+  }, [raw]);
 
   const handleFileSelect = async (file: File) => {
     try {
@@ -79,7 +78,7 @@ const DocumentsPage: React.FC = () => {
       ));
     }
 
-    if (!documentsList.length) {
+    if (!documents.length) {
       return (
         <tr>
           <td colSpan={5} className="p-6 text-center text-muted-foreground">
@@ -89,7 +88,7 @@ const DocumentsPage: React.FC = () => {
       );
     }
 
-    return documentsList.map((doc) => (
+    return documents.map((doc) => (
       <tr
         key={doc.id}
         className="border-b border-border/50 hover:bg-muted/50 cursor-pointer"
