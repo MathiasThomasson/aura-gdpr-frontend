@@ -1,12 +1,3 @@
-export const getApiBaseUrl = (): string => {
-  const envUrl = import.meta.env.VITE_API_URL?.trim();
-  if (envUrl) return envUrl;
+export const API_BASE_URL = (import.meta.env.VITE_API_URL ?? '/api').trim();
 
-  if (import.meta.env.DEV) {
-    return 'http://localhost:8000';
-  }
-
-  return '/api';
-};
-
-export const apiBaseUrl = getApiBaseUrl();
+export const apiBaseUrl = API_BASE_URL;
