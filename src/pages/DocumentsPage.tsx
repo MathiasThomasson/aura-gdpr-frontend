@@ -29,6 +29,7 @@ const DocumentsPage: React.FC = () => {
   const { toast } = useToast();
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const documentsList = documents ?? [];
 
   const handleFileSelect = async (file: File) => {
     try {
@@ -70,7 +71,7 @@ const DocumentsPage: React.FC = () => {
       ));
     }
 
-    if (!documents.length) {
+    if (!documentsList.length) {
       return (
         <tr>
           <td colSpan={5} className="p-6 text-center text-muted-foreground">
@@ -80,7 +81,7 @@ const DocumentsPage: React.FC = () => {
       );
     }
 
-    return documents.map((doc) => (
+    return documentsList.map((doc) => (
       <tr
         key={doc.id}
         className="border-b border-border/50 hover:bg-muted/50 cursor-pointer"

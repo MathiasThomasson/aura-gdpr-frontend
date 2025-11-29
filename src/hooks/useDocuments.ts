@@ -30,7 +30,8 @@ export const useDocuments = () => {
       setLoading(true);
       setError(null);
       const res = await api.get<DocumentsResponse>('/documents');
-      setData(res.data.items);
+      const items = Array.isArray(res?.data?.items) ? res.data.items : [];
+      setData(items);
     } catch (err: any) {
       setError(err?.message ?? 'Failed to load documents');
       setData([]);
