@@ -30,7 +30,14 @@ export const useDocuments = () => {
       setLoading(true);
       setError(null);
       const res = await api.get<DocumentsResponse>('/documents');
-      const items = Array.isArray(res?.data?.items) ? res.data.items : [];
+      const raw = res?.data as unknown;
+      const items = Array.isArray(raw)
+        ? raw
+        : Array.isArray((raw as any)?.items)
+          ? (raw as any).items
+          : Array.isArray((raw as any)?.documents)
+            ? (raw as any).documents
+            : [];
       setData(items);
     } catch (err: any) {
       setError(err?.message ?? 'Failed to load documents');

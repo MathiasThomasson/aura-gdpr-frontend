@@ -29,7 +29,15 @@ const DocumentsPage: React.FC = () => {
   const { toast } = useToast();
   const [selected, setSelected] = useState<DocumentRecord | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const documentsList = documents ?? [];
+  const documentsList = useMemo(() => {
+    if (Array.isArray(documents)) return documents;
+    if (documents && typeof documents === 'object') {
+      const maybe = documents as any;
+      if (Array.isArray(maybe.documents)) return maybe.documents;
+      if (Array.isArray(maybe.items)) return maybe.items;
+    }
+    return [];
+  }, [documents]);
 
   const handleFileSelect = async (file: File) => {
     try {
