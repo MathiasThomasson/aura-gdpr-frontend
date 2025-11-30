@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createDataSubjectRequest, fetchDataSubjectRequests } from '../api';
-import { CreateDataSubjectRequestInput, DataSubjectRequest } from '../types';
+import { createDataSubjectRequest, fetchDataSubjectRequests, updateDataSubjectRequestStatus } from '../api';
+import { CreateDataSubjectRequestInput, DataSubjectRequest, DataSubjectRequestStatus } from '../types';
 
 export const useDataSubjectRequests = () => {
   const [data, setData] = useState<DataSubjectRequest[]>([]);
@@ -47,12 +47,21 @@ export const useDataSubjectRequests = () => {
     []
   );
 
+  const updateStatus = useCallback(async (id: string, status: DataSubjectRequestStatus) => {
+    const updated = await updateDataSubjectRequestStatus(id, status);
+    if (isMounted.current) {
+      setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+    }
+    return updated;
+  }, []);
+
   return {
     data,
     loading,
     error,
     reload: load,
     create,
+    updateStatus,
   };
 };
 
