@@ -53,6 +53,9 @@ const DocumentsPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
+      <div style={{ background: 'red', padding: '20px' }}>
+        <b>DOCUMENTS PAGE — BUILD TEST</b>
+      </div>
       <div>
         <h1 className="text-2xl font-semibold">Documents</h1>
         <p className="text-sm text-muted-foreground">
