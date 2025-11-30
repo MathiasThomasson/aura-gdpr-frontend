@@ -4,7 +4,7 @@ import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import AppLayout from '@/components/layout/AppLayout';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
-import DocumentsPlaceholder from '@/pages/DocumentsPlaceholder';
+import DocumentsPage from '@/pages/DocumentsPage';
 import AIAssistantPage from '@/pages/AIAssistantPage';
 import BillingPage from '@/pages/BillingPage';
 import AccountSettingsPage from '@/pages/AccountSettingsPage';
@@ -45,7 +45,7 @@ const AppRoutes = () => (
     >
       <Route index element={<Navigate to="/app/dashboard" replace />} />
       <Route path="dashboard" element={<DashboardPage />} />
-      <Route path="documents" element={<DocumentsPlaceholder />} />
+      <Route path="documents" element={<DocumentsPage />} />
       <Route path="ai-assistant" element={<AIAssistantPage />} />
       <Route path="tasks" element={<TasksPage />} />
       <Route path="projects" element={<ProjectsPage />} />
