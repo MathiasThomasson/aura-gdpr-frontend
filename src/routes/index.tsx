@@ -22,6 +22,7 @@ import PoliciesPage from '@/pages/PoliciesPage';
 import IncidentsPage from '@/pages/IncidentsPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useAuth } from '@/contexts/AuthContext';
+import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -33,6 +34,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
     <Route path="/dsr-portal" element={<DsrPortalPage />} />
+    <Route path="/public/dsr/:tenantSlug" element={<PublicDataSubjectRequestPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route
