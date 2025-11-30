@@ -1,61 +1,176 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Zap, CreditCard, Settings, ShieldCheck, CheckSquare, Briefcase, ClipboardList, FileSignature, ShieldAlert, Inbox } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  Briefcase,
+  CheckSquare,
+  ClipboardList,
+  CreditCard,
+  Database,
+  FileSignature,
+  FileText,
+  Gauge,
+  Inbox,
+  LayoutDashboard,
+  LucideIcon,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
-const navItems = [
-  { name: 'Dashboard', icon: Home, path: '/app/dashboard' },
-  { name: 'Documents', icon: FileText, path: '/app/documents' },
-  { name: 'AI Assistant', icon: Zap, path: '/app/ai-assistant' },
-  { name: 'Tasks', icon: CheckSquare, path: '/app/tasks' },
-  { name: 'Projects', icon: Briefcase, path: '/app/projects' },
-  { name: 'Audit Log', icon: ClipboardList, path: '/app/audit' },
-  { name: 'Risk Matrix', icon: ShieldAlert, path: '/app/risk-matrix' },
-  { name: 'Data Subject Requests', icon: Inbox, path: '/app/dsr' },
-  { name: 'DPIA', icon: FileSignature, path: '/app/dpia' },
-  { name: 'Policies', icon: FileText, path: '/app/policies' },
-  { name: 'Billing', icon: CreditCard, path: '/app/billing' },
-  { name: 'Settings', icon: Settings, path: '/app/settings' },
+type NavItem = {
+  label: string;
+  path?: string;
+  icon: LucideIcon;
+  disabled?: boolean;
+  adminOnly?: boolean;
+};
+
+type NavSection = {
+  title: string;
+  items: NavItem[];
+};
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: 'Overview',
+    items: [{ label: 'Dashboard', path: '/app/dashboard', icon: LayoutDashboard }],
+  },
+  {
+    title: 'Compliance',
+    items: [
+      { label: 'Documents', path: '/app/documents', icon: FileText },
+      { label: 'Policies', path: '/app/policies', icon: ShieldCheck },
+      { label: 'Data Subject Requests', path: '/app/dsr', icon: Inbox },
+      { label: 'DPIA', path: '/app/dpia', icon: FileSignature },
+      { label: 'ROPA (coming soon)', icon: Database, disabled: true },
+      { label: 'Incidents (coming soon)', icon: AlertTriangle, disabled: true },
+    ],
+  },
+  {
+    title: 'Governance',
+    items: [
+      { label: 'Tasks', path: '/app/tasks', icon: CheckSquare },
+      { label: 'Projects', path: '/app/projects', icon: Briefcase },
+      { label: 'Risk Matrix', path: '/app/risk-matrix', icon: Activity },
+      { label: 'Audit Log', path: '/app/audit', icon: ClipboardList },
+      { label: 'Admin', path: '/app/admin', icon: ShieldCheck, adminOnly: true },
+    ],
+  },
+  {
+    title: 'AI Tools',
+    items: [
+      { label: 'AI Assistant', path: '/app/ai-assistant', icon: Sparkles },
+      { label: 'AI Policy Generator', icon: FileText, disabled: true },
+      { label: 'AI Audit Engine', icon: Gauge, disabled: true },
+    ],
+  },
+  {
+    title: 'Account',
+    items: [
+      { label: 'Billing', path: '/app/billing', icon: CreditCard },
+      { label: 'Settings', path: '/app/settings', icon: SettingsIcon },
+    ],
+  },
 ];
 
-const Sidebar: React.FC = () => {
+type SidebarProps = {
+  isOpen: boolean;
+  onClose: () => void;
+};
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth() as { user?: { role?: string } };
   const isAdmin = user?.role === 'Admin';
 
-  const items = React.useMemo(() => {
-    if (isAdmin) {
-      return [...navItems, { name: 'Admin', icon: ShieldCheck, path: '/app/admin' }];
+  const sections = React.useMemo(
+    () =>
+      NAV_SECTIONS.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => (item.adminOnly ? isAdmin : true)),
+      })).filter((section) => section.items.length > 0),
+    [isAdmin]
+  );
+
+  const renderNavItem = (item: NavItem) => {
+    if (!item.path || item.disabled) {
+      return (
+        <div
+          key={item.label}
+          className="flex items-center gap-3 rounded-md border-l-2 border-transparent bg-white/50 px-3 py-2 text-sm font-medium text-slate-400"
+        >
+          <item.icon className="h-5 w-5" />
+          <span>{item.label}</span>
+        </div>
+      );
     }
-    return navItems;
-  }, [isAdmin]);
+
+    return (
+      <NavLink
+        key={item.label}
+        to={item.path}
+        onClick={onClose}
+        className={({ isActive }) =>
+          cn(
+            'group flex items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-medium transition-all',
+            isActive
+              ? 'border-sky-500 bg-white shadow-sm text-slate-900'
+              : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-white/80'
+          )
+        }
+      >
+        <item.icon className="h-5 w-5 text-slate-500 group-hover:text-slate-800" />
+        <span>{item.label}</span>
+      </NavLink>
+    );
+  };
 
   return (
-    <aside className="w-64 p-6 bg-white dark:bg-slate-800 border-r border-border h-screen">
-      <div className="mb-8">
-        <NavLink to="/app/dashboard">
-          <h2 className="text-2xl font-bold text-foreground">AURA-GDPR</h2>
-        </NavLink>
-      </div>
-      <nav>
-        <ul className="space-y-2">
-          {items.map((item) => (
-            <li key={item.name}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 ${
-                    isActive ? 'bg-sky-100 dark:bg-slate-700' : ''
-                  }`
-                }
-              >
-                <item.icon className="w-4 h-4 text-sky-500" />
-                <span className="text-sm font-medium">{item.name}</span>
-              </NavLink>
-            </li>
+    <>
+      <div
+        className={cn(
+          'fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm transition-opacity lg:hidden',
+          isOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        )}
+        onClick={onClose}
+      />
+      <aside
+        className={cn(
+          'fixed inset-y-0 left-0 z-40 w-72 transform border-r border-slate-200 bg-white/90 backdrop-blur shadow-xl transition-transform duration-200 lg:static lg:z-auto lg:flex lg:w-72 lg:translate-x-0 lg:flex-col lg:shadow-none',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-white/70 backdrop-blur">
+          <div>
+            <p className="text-xs uppercase tracking-wide text-slate-500">Workspace</p>
+            <p className="text-lg font-semibold text-slate-900">AURA-GDPR</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden text-slate-500 hover:text-slate-900"
+            onClick={onClose}
+            aria-label="Close navigation"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+
+        <nav className="flex-1 space-y-6 overflow-y-auto px-4 py-4">
+          {sections.map((section) => (
+            <div key={section.title} className="space-y-2">
+              <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{section.title}</p>
+              <div className="space-y-1">{section.items.map((item) => renderNavItem(item))}</div>
+            </div>
           ))}
-        </ul>
-      </nav>
-    </aside>
+        </nav>
+      </aside>
+    </>
   );
 };
 
