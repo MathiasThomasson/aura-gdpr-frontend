@@ -68,7 +68,7 @@ const notifications: Notification[] = [
   { id: 'policies', message: 'You have 0 policies expiring this month.', tone: 'warning' },
 ];
 
-const currentPlan = { name: 'Pro plan', trialEndsInDays: 0 };
+const currentPlan = { type: 'pro', trialDaysLeft: 0 };
 
 const toneStyles: Record<NotificationTone, string> = {
   info: 'bg-sky-500',
@@ -92,9 +92,9 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   const role = user?.role || 'Member';
   const tenantName = user?.tenantName || 'Acme Privacy Ltd.';
   const planLabel =
-    currentPlan.trialEndsInDays > 0
-      ? `Free trial – ${currentPlan.trialEndsInDays} days left`
-      : currentPlan.name;
+    currentPlan.trialDaysLeft > 0
+      ? `Free trial – ${currentPlan.trialDaysLeft} days left`
+      : 'Pro plan';
   const currentPageTitle = PAGE_TITLES[location.pathname] ?? 'Dashboard';
 
   const handleSignOut = () => {
