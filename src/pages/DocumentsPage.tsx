@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PageInfoBox from '@/components/PageInfoBox';
+import { useAuth } from '@/contexts/AuthContext';
 
 type DocumentItem = {
   id?: string;
@@ -13,15 +14,26 @@ const DocumentsPage: React.FC = () => {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
+      if (!accessToken) {
+        setError('Kunde inte hämta dokument.');
+        setLoading(false);
+        setData([]);
+        return;
+      }
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch('/api/documents');
+        const res = await fetch('/api/documents', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
         if (!res.ok) throw new Error('Kunde inte hämta dokument.');
         const json = await res.json();
         if (cancelled) return;
@@ -46,7 +58,7 @@ const DocumentsPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [accessToken]);
 
   const documents: DocumentItem[] = Array.isArray(data) ? data : [];
   const hasDocuments = documents.length > 0;
