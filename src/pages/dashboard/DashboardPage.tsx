@@ -7,6 +7,7 @@ import DeadlinesPanel from '@/features/dashboard/components/DeadlinesPanel';
 import AiInsightsPanel from '@/features/dashboard/components/AiInsightsPanel';
 import RecentActivityPanel from '@/features/dashboard/components/RecentActivityPanel';
 import RiskOverviewPanel from '@/features/dashboard/components/RiskOverviewPanel';
+import GettingStartedChecklist from '@/features/dashboard/components/GettingStartedChecklist';
 
 const DashboardPage: React.FC = () => {
   const { summary, deadlines, activities, aiInsights, riskOverview } = useDashboardMockData();
@@ -32,8 +33,13 @@ const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      <section aria-label="Key metrics">
-        <KpiGrid summary={summary} />
+      <section aria-label="Key metrics and onboarding">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <KpiGrid summary={summary} />
+          </div>
+          <GettingStartedChecklist />
+        </div>
       </section>
 
       <section aria-label="Deadlines and AI insights">

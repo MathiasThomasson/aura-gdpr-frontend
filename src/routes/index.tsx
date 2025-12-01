@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import AppLayout from '@/components/layout/AppLayout';
@@ -28,10 +28,13 @@ import TomsPage from '@/pages/TomsPage';
 import CookiesPage from '@/pages/CookiesPage';
 import IamPage from '@/pages/IamPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import ErrorPage from '@/pages/ErrorPage';
 import SecurityHealthPage from '@/pages/SecurityHealthPage';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
 import LandingPage from '@/features/marketing/LandingPage';
+import { useOnboarding } from '@/contexts/OnboardingContext';
+import OnboardingPage from '@/features/onboarding/OnboardingPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -39,18 +42,50 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
+  const { state, loading } = useOnboarding();
+  const location = useLocation();
+
+  if (loading) {
+    return <div className="p-6 text-sm text-slate-600">Loading workspace...</div>;
+  }
+
+  if (!state.completed && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  if (state.completed && location.pathname === '/onboarding') {
+    return <Navigate to="/app/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
+    <Route path="/demo" element={<Navigate to="/app/dashboard?demo=1" replace />} />
     <Route path="/dsr-portal" element={<DsrPortalPage />} />
     <Route path="/public/dsr/:tenantSlug" element={<PublicDataSubjectRequestPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route
+      path="/onboarding"
+      element={
+        <ProtectedRoute>
+          <OnboardingGuard>
+            <OnboardingPage />
+          </OnboardingGuard>
+        </ProtectedRoute>
+      }
+    />
+    <Route
       path="/app"
       element={
         <ProtectedRoute>
-          <AppLayout />
+          <OnboardingGuard>
+            <AppLayout />
+          </OnboardingGuard>
         </ProtectedRoute>
       }
     >
@@ -80,6 +115,7 @@ const AppRoutes = () => (
       <Route path="admin" element={<AdminPage />} />
       <Route path="admin/dsr-portal" element={<AdminDsrPortalSettingsPage />} />
     </Route>
+    <Route path="/error" element={<ErrorPage />} />
     <Route path="*" element={<NotFoundPage />} />
   </Routes>
 );

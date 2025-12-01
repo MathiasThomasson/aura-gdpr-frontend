@@ -28,7 +28,7 @@ const NotFoundPage: React.FC = () => {
         transition={{ delay: 0.4, duration: 0.5 }}
         className="text-2xl text-slate-300 mb-8"
       >
-        Oops! Page Not Found.
+        Page not found
       </motion.p>
       <motion.p
         initial={{ opacity: 0, y: 20 }}

@@ -12,6 +12,8 @@ import {
   DataSubjectRequest,
   DataSubjectRequestStatus,
 } from '@/features/dsr/types';
+import { useSystemStatus } from '@/contexts/SystemContext';
+import { useUserProgress } from '@/contexts/UserProgressContext';
 
 type StatusFilter = 'all' | 'open' | 'completed' | 'rejected';
 
@@ -49,6 +51,8 @@ const dueTone = (value?: string | null) => {
 const DataSubjectRequestsPage: React.FC = () => {
   const { data, loading, detailLoading, error, reload, create, updateStatus, fetchDetail } = useDataSubjectRequests();
   const { toast } = useToast();
+  const { demoMode } = useSystemStatus();
+  const { markComplete } = useUserProgress();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
   const [selectedDsr, setSelectedDsr] = React.useState<DataSubjectRequest | null>(null);
@@ -58,6 +62,7 @@ const DataSubjectRequestsPage: React.FC = () => {
   const handleCreate = async (payload: CreateDataSubjectRequestInput) => {
     await create(payload);
     await reload();
+    markComplete('firstDsr').catch(() => {});
     setIsModalOpen(false);
   };
 
@@ -118,7 +123,7 @@ const DataSubjectRequestsPage: React.FC = () => {
               <RefreshCcw className="mr-2 h-4 w-4" />
               Refresh
             </Button>
-            <Button size="sm" onClick={() => setIsModalOpen(true)}>
+            <Button size="sm" onClick={() => setIsModalOpen(true)} disabled={demoMode}>
               <Plus className="mr-2 h-4 w-4" />
               New request
             </Button>
@@ -145,6 +150,12 @@ const DataSubjectRequestsPage: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {demoMode && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+            Demo mode — creation and updates are disabled.
+          </div>
+        )}
 
         <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           {loading && <p className="text-sm text-muted-foreground">Loading requests...</p>}
