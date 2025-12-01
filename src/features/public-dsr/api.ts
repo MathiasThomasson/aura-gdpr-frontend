@@ -1,4 +1,4 @@
-import api from '@/lib/apiClient';
+import { createPublicDsr } from '@/features/dsr/api';
 import { PublicDsrPayload } from './types';
 
 export const createPublicDataSubjectRequest = async (
@@ -9,5 +9,5 @@ export const createPublicDataSubjectRequest = async (
     throw new Error('Missing tenant identifier.');
   }
 
-  await api.post(`/public/tenants/${tenantSlug}/data-subject-requests`, payload);
+  await createPublicDsr(tenantSlug, payload);
 };

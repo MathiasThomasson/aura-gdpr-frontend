@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createDataSubjectRequest, fetchDataSubjectRequests, updateDataSubjectRequestStatus } from '../api';
+import { createDsr, getDsrs, updateDsrStatus, getDsr } from '../api';
 import { CreateDataSubjectRequestInput, DataSubjectRequest, DataSubjectRequestStatus } from '../types';
 
 export const useDataSubjectRequests = () => {
   const [data, setData] = useState<DataSubjectRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [detailLoading, setDetailLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const isMounted = useRef(true);
 
@@ -18,7 +19,7 @@ export const useDataSubjectRequests = () => {
     setLoading(true);
     setError(null);
     try {
-      const requests = await fetchDataSubjectRequests();
+      const requests = await getDsrs();
       if (isMounted.current) {
         setData(requests);
       }
@@ -38,7 +39,7 @@ export const useDataSubjectRequests = () => {
 
   const create = useCallback(
     async (payload: CreateDataSubjectRequestInput) => {
-      const created = await createDataSubjectRequest(payload);
+      const created = await createDsr(payload);
       if (isMounted.current) {
         setData((prev) => [created, ...prev]);
       }
@@ -48,20 +49,40 @@ export const useDataSubjectRequests = () => {
   );
 
   const updateStatus = useCallback(async (id: string, status: DataSubjectRequestStatus) => {
-    const updated = await updateDataSubjectRequestStatus(id, status);
+    const updated = await updateDsrStatus(id, status);
     if (isMounted.current) {
       setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
     }
     return updated;
   }, []);
 
+  const fetchDetail = useCallback(
+    async (id: string) => {
+      setDetailLoading(true);
+      try {
+        const detail = await getDsr(id);
+        if (isMounted.current) {
+          setData((prev) => prev.map((item) => (item.id === detail.id ? detail : item)));
+        }
+        return detail;
+      } finally {
+        if (isMounted.current) {
+          setDetailLoading(false);
+        }
+      }
+    },
+    []
+  );
+
   return {
     data,
     loading,
+    detailLoading,
     error,
     reload: load,
     create,
     updateStatus,
+    fetchDetail,
   };
 };
 

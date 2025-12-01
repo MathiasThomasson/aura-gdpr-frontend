@@ -23,7 +23,7 @@ const formatDate = (value?: string | null) => {
 };
 
 const formatType = (value?: string) => {
-  if (!value) return '—';
+  if (!value) return 'N/A';
   return value.slice(0, 1).toUpperCase() + value.slice(1);
 };
 
@@ -47,7 +47,7 @@ const dueTone = (value?: string | null) => {
 };
 
 const DataSubjectRequestsPage: React.FC = () => {
-  const { data, loading, error, reload, create, updateStatus } = useDataSubjectRequests();
+  const { data, loading, detailLoading, error, reload, create, updateStatus, fetchDetail } = useDataSubjectRequests();
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
@@ -71,6 +71,11 @@ const DataSubjectRequestsPage: React.FC = () => {
   const handleRowClick = (dsr: DataSubjectRequest) => {
     setSelectedDsr(dsr);
     setDrawerError(null);
+    if (dsr.id) {
+      fetchDetail(dsr.id)
+        .then((detail) => setSelectedDsr(detail))
+        .catch((err: any) => setDrawerError(err?.message ?? 'Failed to load request details.'));
+    }
   };
 
   const handleStatusChange = async (nextStatus: DataSubjectRequestStatus) => {
@@ -148,7 +153,7 @@ const DataSubjectRequestsPage: React.FC = () => {
             <p className="text-sm text-muted-foreground">No data subject requests yet.</p>
           )}
 
-          {filteredData.length > 0 && (
+          {!loading && filteredData.length > 0 && (
             <div className="overflow-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -204,6 +209,7 @@ const DataSubjectRequestsPage: React.FC = () => {
         onStatusChange={handleStatusChange}
         isUpdating={isUpdating}
         error={drawerError}
+        isLoading={detailLoading}
       />
 
       <NewDataSubjectRequestModal

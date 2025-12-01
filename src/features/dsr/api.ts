@@ -3,6 +3,7 @@ import {
   CreateDataSubjectRequestInput,
   DataSubjectRequest,
   DataSubjectRequestStatus,
+  DataSubjectRequestType,
 } from './types';
 
 const statusFallback = (value: any): DataSubjectRequestStatus => {
@@ -17,15 +18,29 @@ const statusFallback = (value: any): DataSubjectRequestStatus => {
   return allowed.includes(value) ? value : 'received';
 };
 
+const typeFallback = (value: any): DataSubjectRequestType => {
+  const allowed: DataSubjectRequestType[] = [
+    'access',
+    'rectification',
+    'erasure',
+    'restriction',
+    'portability',
+    'objection',
+    'other',
+  ];
+  return allowed.includes(value) ? value : 'access';
+};
+
 const mapDsr = (item: any): DataSubjectRequest => ({
   ...item,
+  type: typeFallback(item?.type),
   status: statusFallback(item?.status),
   dueDate: item?.dueDate ?? item?.due_at ?? null,
   createdAt: item?.createdAt ?? item?.created_at,
   updatedAt: item?.updatedAt ?? item?.updated_at,
 });
 
-const normalizeDataSubjectRequests = (payload: unknown): DataSubjectRequest[] => {
+const normalizeList = (payload: unknown): DataSubjectRequest[] => {
   if (Array.isArray(payload)) return payload.map(mapDsr);
   const value = payload as { items?: unknown; requests?: unknown };
   if (Array.isArray(value?.items)) return value.items.map(mapDsr);
@@ -33,22 +48,30 @@ const normalizeDataSubjectRequests = (payload: unknown): DataSubjectRequest[] =>
   return [];
 };
 
-export const fetchDataSubjectRequests = async (): Promise<DataSubjectRequest[]> => {
-  const res = await api.get('/dsr');
-  return normalizeDataSubjectRequests(res.data);
-};
+export async function getDsrs(): Promise<DataSubjectRequest[]> {
+  const res = await api.get('/api/dsr');
+  return normalizeList(res.data);
+}
 
-export const createDataSubjectRequest = async (
-  payload: CreateDataSubjectRequestInput
-): Promise<DataSubjectRequest> => {
-  const res = await api.post('/dsr', payload);
+export async function getDsr(id: string): Promise<DataSubjectRequest> {
+  const res = await api.get(`/api/dsr/${id}`);
   return mapDsr(res.data);
-};
+}
 
-export const updateDataSubjectRequestStatus = async (
+export async function createDsr(payload: CreateDataSubjectRequestInput): Promise<DataSubjectRequest> {
+  const res = await api.post('/api/dsr', payload);
+  return mapDsr(res.data);
+}
+
+export async function updateDsrStatus(
   id: string,
   status: DataSubjectRequestStatus
-): Promise<DataSubjectRequest> => {
-  const res = await api.patch(`/dsr/${id}`, { status });
+): Promise<DataSubjectRequest> {
+  const res = await api.patch(`/api/dsr/${id}`, { status });
   return mapDsr(res.data);
-};
+}
+
+export async function createPublicDsr(tenantSlug: string, payload: unknown): Promise<void> {
+  if (!tenantSlug) throw new Error('Missing tenant identifier.');
+  await api.post(`/api/public/dsr/${tenantSlug}`, payload);
+}

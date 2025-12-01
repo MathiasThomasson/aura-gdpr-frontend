@@ -12,6 +12,7 @@ type DsrDetailsDrawerProps = {
   onStatusChange: (status: DataSubjectRequestStatus) => Promise<void>;
   isUpdating?: boolean;
   error?: string | null;
+  isLoading?: boolean;
 };
 
 const transitions: Record<DataSubjectRequestStatus, DataSubjectRequestStatus[]> = {
@@ -84,6 +85,7 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
   onStatusChange,
   isUpdating = false,
   error,
+  isLoading = false,
 }) => {
   const panelRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -151,6 +153,9 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
         </div>
 
         <div className="space-y-4 p-5">
+          {isLoading && (
+            <p className="text-sm text-slate-500">Loading request details...</p>
+          )}
           <div className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <Mail className="h-4 w-4 text-slate-500" />
@@ -237,7 +242,7 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
                   key={next}
                   variant="outline"
                   size="sm"
-                  disabled={isUpdating}
+                  disabled={isUpdating || isLoading}
                   onClick={() => onStatusChange(next)}
                 >
                   {statusLabels[next] || 'Update status'}
