@@ -24,6 +24,7 @@ import PoliciesPage from '@/pages/PoliciesPage';
 import IncidentsPage from '@/pages/IncidentsPage';
 import RopaPage from '@/pages/RopaPage';
 import TomsPage from '@/pages/TomsPage';
+import CookiesPage from '@/pages/CookiesPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
@@ -61,6 +62,7 @@ const AppRoutes = () => (
       <Route path="dsr" element={<DataSubjectRequestsPage />} />
       <Route path="dpia" element={<DpiaPage />} />
       <Route path="ropa" element={<RopaPage />} />
+      <Route path="cookies" element={<CookiesPage />} />
       <Route path="policies" element={<PoliciesPage />} />
       <Route path="incidents" element={<IncidentsPage />} />
       <Route path="toms" element={<TomsPage />} />
