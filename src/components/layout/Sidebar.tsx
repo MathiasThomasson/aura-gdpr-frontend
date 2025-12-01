@@ -61,6 +61,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Risk Matrix', path: '/app/risk-matrix', icon: Activity },
       { label: 'Audit Log', path: '/app/audit', icon: ClipboardList },
       { label: 'ROPA', path: '/app/ropa', icon: Database },
+      { label: 'Incidents', path: '/app/incidents', icon: AlertTriangle },
       { label: 'Notifications', path: '/app/notifications', icon: Bell },
       { label: 'Admin', path: '/app/admin', icon: ShieldCheck, adminOnly: true },
     ],
