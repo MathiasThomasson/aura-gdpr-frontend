@@ -1,15 +1,16 @@
 import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import CookiesTable from './components/CookiesTable';
 import CookieFiltersBar from './components/CookieFiltersBar';
 import CookieDetailsDrawer from './components/CookieDetailsDrawer';
 import NewCookieButton from './components/NewCookieButton';
-import useCookiesMockData from './hooks/useCookiesMockData';
+import useCookies from './hooks/useCookies';
 import { CookieCategory, CookieItem, CookieSource } from './types';
 import { generateCookiePolicyAi } from './api';
 import { Button } from '@/components/ui/button';
 
 const CookiesPage: React.FC = () => {
-  const { cookies, setCookies, isLoading, isError } = useCookiesMockData();
+  const { cookies, loading, detailLoading, saving, error, refresh, fetchOne, create, update, patch } = useCookies();
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState<CookieCategory | 'all'>('all');
   const [type, setType] = React.useState<'first_party' | 'third_party' | 'all'>('all');
@@ -34,32 +35,35 @@ const CookiesPage: React.FC = () => {
 
   const handleSelect = (cookie: CookieItem) => {
     setSelected(cookie);
-    setMode('view');
+    setMode('edit');
+    if (cookie.id) {
+      fetchOne(cookie.id)
+        .then((detail) => setSelected(detail))
+        .catch(() => {});
+    }
   };
 
-  const handleSave = (cookie: CookieItem, saveMode: 'create' | 'edit') => {
-    const now = new Date().toISOString();
-    setCookies((prev) => {
-      if (saveMode === 'edit') {
-        return prev.map((c) => (c.id === cookie.id ? { ...cookie, lastUpdated: now } : c));
+  const handleSave = async (cookie: CookieItem, saveMode: 'create' | 'edit') => {
+    try {
+      if (saveMode === 'create') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...payload } = cookie;
+        await create(payload);
+      } else if (cookie.id) {
+        await update(cookie.id, cookie);
       }
-      return [
-        {
-          ...cookie,
-          createdAt: now,
-          lastUpdated: now,
-        },
-        ...prev,
-      ];
-    });
-    setSelected(null);
-    setMode('view');
+      await refresh();
+      setSelected(null);
+      setMode('view');
+    } catch (err) {
+      // errors are captured in hook state
+    }
   };
 
   const handleNew = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `cookie-${Date.now()}`,
+      id: '',
       name: '',
       domain: '',
       duration: '',
@@ -74,12 +78,70 @@ const CookiesPage: React.FC = () => {
     setMode('create');
   };
 
+  const handleCategoryChange = async (cookieId: string, nextCategory: CookieCategory) => {
+    try {
+      await patch(cookieId, { category: nextCategory });
+      await refresh();
+    } catch (err) {
+      // errors are captured in hook state
+    }
+  };
+
+  const handleTypeChange = async (cookieId: string, nextType: CookieItem['type']) => {
+    try {
+      await patch(cookieId, { type: nextType });
+      await refresh();
+    } catch (err) {
+      // errors are captured in hook state
+    }
+  };
+
   const handleGenerateAi = async () => {
     setAiLoading(true);
     const draft = await generateCookiePolicyAi();
     setAiDraft(draft.trim());
     setAiModalOpen(true);
     setAiLoading(false);
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-20 w-full rounded-lg bg-slate-100" />
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="flex items-center justify-between gap-3">
+            <p>{error}</p>
+            <button
+              type="button"
+              className="text-xs font-semibold text-rose-800 underline"
+              onClick={() => refresh()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+          <p className="font-semibold text-slate-900">No cookies match the current filters.</p>
+          <p className="text-slate-600">Adjust filters or create a new cookie entry.</p>
+        </div>
+      );
+    }
+
+    return <CookiesTable cookies={filtered} onSelect={handleSelect} />;
   };
 
   return (
@@ -108,14 +170,21 @@ const CookiesPage: React.FC = () => {
         onSourceChange={setSource}
       />
 
-      <CookiesTable cookies={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      {renderContent()}
 
       <CookieDetailsDrawer
         cookie={selected}
         isOpen={Boolean(selected)}
         mode={mode}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          setMode('view');
+        }}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
+        onCategoryChange={handleCategoryChange}
+        onTypeChange={handleTypeChange}
       />
 
       {aiModalOpen && (

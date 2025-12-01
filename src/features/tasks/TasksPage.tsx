@@ -1,9 +1,10 @@
 import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import TasksFiltersBar from './components/TasksFiltersBar';
 import TasksTable from './components/TasksTable';
 import TaskDetailsDrawer from './components/TaskDetailsDrawer';
 import NewTaskButton from './components/NewTaskButton';
-import useTasksMockData from './hooks/useTasksMockData';
+import useTasks from './hooks/useTasks';
 import { TaskItem, TaskPriority, TaskResourceType, TaskStatus } from './types';
 
 type PriorityFilter = TaskPriority | 'all';
@@ -24,7 +25,7 @@ const isDueFilterMatch = (dueDate: string, filter: DueFilter) => {
 };
 
 const TasksPage: React.FC = () => {
-  const { tasks, setTasks, isLoading, isError } = useTasksMockData();
+  const { tasks, loading, detailLoading, saving, error, refresh, fetchOne, create, update, patch } = useTasks();
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState<StatusFilter>('all');
   const [priority, setPriority] = React.useState<PriorityFilter>('all');
@@ -50,32 +51,35 @@ const TasksPage: React.FC = () => {
 
   const handleSelect = (task: TaskItem) => {
     setSelected(task);
-    setMode('view');
+    setMode('edit');
+    if (task.id) {
+      fetchOne(task.id)
+        .then((detail) => setSelected(detail))
+        .catch(() => {});
+    }
   };
 
-  const handleSave = (task: TaskItem, saveMode: 'create' | 'edit') => {
-    const now = new Date().toISOString();
-    setTasks((prev) => {
-      if (saveMode === 'edit') {
-        return prev.map((t) => (t.id === task.id ? { ...task, updatedAt: now } : t));
+  const handleSave = async (task: TaskItem, saveMode: 'create' | 'edit') => {
+    try {
+      if (saveMode === 'create') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...payload } = task;
+        await create(payload);
+      } else if (task.id) {
+        await update(task.id, task);
       }
-      return [
-        {
-          ...task,
-          createdAt: now,
-          updatedAt: now,
-        },
-        ...prev,
-      ];
-    });
-    setSelected(null);
-    setMode('view');
+      await refresh();
+      setSelected(null);
+      setMode('view');
+    } catch (err) {
+      // errors are captured in hook state
+    }
   };
 
   const handleNew = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `task-${Date.now()}`,
+      id: '',
       title: '',
       description: '',
       status: 'open',
@@ -89,6 +93,64 @@ const TasksPage: React.FC = () => {
       resourceName: '',
     });
     setMode('create');
+  };
+
+  const handleStatusChange = async (taskId: string, nextStatus: TaskStatus) => {
+    try {
+      await patch(taskId, { status: nextStatus });
+      await refresh();
+    } catch (err) {
+      // errors are captured in hook state
+    }
+  };
+
+  const handlePriorityChange = async (taskId: string, nextPriority: TaskPriority) => {
+    try {
+      await patch(taskId, { priority: nextPriority });
+      await refresh();
+    } catch (err) {
+      // errors are captured in hook state
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-20 w-full rounded-lg bg-slate-100" />
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="flex items-center justify-between gap-3">
+            <p>{error}</p>
+            <button
+              type="button"
+              className="text-xs font-semibold text-rose-800 underline"
+              onClick={() => refresh()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+          <p className="font-semibold text-slate-900">No tasks match the current filters.</p>
+          <p className="text-slate-600">Adjust filters or create a new task.</p>
+        </div>
+      );
+    }
+
+    return <TasksTable tasks={filtered} onSelect={handleSelect} />;
   };
 
   return (
@@ -114,14 +176,21 @@ const TasksPage: React.FC = () => {
         onDueChange={setDue}
       />
 
-      <TasksTable tasks={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      {renderContent()}
 
       <TaskDetailsDrawer
         task={selected}
         isOpen={Boolean(selected)}
         mode={mode}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          setMode('view');
+        }}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
+        onStatusChange={handleStatusChange}
+        onPriorityChange={handlePriorityChange}
       />
     </div>
   );

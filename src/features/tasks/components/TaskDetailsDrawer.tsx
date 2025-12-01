@@ -12,8 +12,12 @@ type Props = {
   task: TaskItem | null;
   isOpen: boolean;
   mode: Mode;
+  isLoading?: boolean;
+  isSaving?: boolean;
   onClose: () => void;
-  onSave: (task: TaskItem, mode: 'create' | 'edit') => void;
+  onSave: (task: TaskItem, mode: 'create' | 'edit') => void | Promise<void>;
+  onStatusChange?: (id: string, status: TaskStatus) => Promise<void>;
+  onPriorityChange?: (id: string, priority: TaskPriority) => Promise<void>;
 };
 
 const statuses: TaskStatus[] = ['open', 'in_progress', 'blocked', 'completed', 'cancelled'];
@@ -30,9 +34,26 @@ const resourceLinkMap: Partial<Record<TaskResourceType, string>> = {
   toms: '/app/toms',
 };
 
-const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSave }) => {
+const TaskDetailsDrawer: React.FC<Props> = ({
+  task,
+  isOpen,
+  mode,
+  isLoading,
+  isSaving,
+  onClose,
+  onSave,
+  onStatusChange,
+  onPriorityChange,
+}) => {
   const [draft, setDraft] = React.useState<TaskItem | null>(task);
-  const [errors, setErrors] = React.useState<{ title?: string; description?: string; resourceType?: string }>({});
+  const [errors, setErrors] = React.useState<{
+    title?: string;
+    description?: string;
+    resourceType?: string;
+    status?: string;
+    priority?: string;
+    dueDate?: string;
+  }>({});
   const panelRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -70,26 +91,53 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !draft) return null;
+  if (!isOpen || (!draft && !isLoading)) return null;
 
-  const isEditable = mode === 'create' || mode === 'edit';
+  const isEditable = (mode === 'create' || mode === 'edit') && !isLoading;
+  const allowStatusPatch = onStatusChange && draft?.id && mode !== 'create';
+  const allowPriorityPatch = onPriorityChange && draft?.id && mode !== 'create';
+  const isBusy = Boolean(isLoading || isSaving);
 
   const updateField = <K extends keyof TaskItem>(key: K, value: TaskItem[K]) => {
     setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
   const validate = () => {
-    const next: { title?: string; description?: string; resourceType?: string } = {};
+    const next: {
+      title?: string;
+      description?: string;
+      resourceType?: string;
+      status?: string;
+      priority?: string;
+      dueDate?: string;
+    } = {};
     if (!draft.title.trim()) next.title = 'Title is required.';
     if (!draft.description.trim()) next.description = 'Description is required.';
     if (!draft.resourceType) next.resourceType = 'Resource type is required.';
+    if (!draft.status) next.status = 'Status is required.';
+    if (!draft.priority) next.priority = 'Priority is required.';
+    if (!draft.dueDate) next.dueDate = 'Due date is required.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
-    onSave(draft, mode === 'create' ? 'create' : 'edit');
+    await onSave(draft, mode === 'create' ? 'create' : 'edit');
+  };
+
+  const handleStatusChange = async (nextStatus: TaskStatus) => {
+    updateField('status', nextStatus);
+    if (allowStatusPatch && draft?.id) {
+      await onStatusChange?.(draft.id, nextStatus);
+    }
+  };
+
+  const handlePriorityChange = async (nextPriority: TaskPriority) => {
+    updateField('priority', nextPriority);
+    if (allowPriorityPatch && draft?.id) {
+      await onPriorityChange?.(draft.id, nextPriority);
+    }
   };
 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -97,6 +145,30 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
       onClose();
     }
   };
+
+  if (!draft && isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-sm" onMouseDown={handleOverlayClick}>
+        <div className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white shadow-2xl" ref={panelRef}>
+          <div className="flex items-start justify-between border-b border-slate-200 px-5 py-4">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-slate-900">Task</h2>
+              <p className="text-sm text-slate-600">Loading task...</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-5 text-sm text-slate-600">Loading task...</div>
+        </div>
+      </div>
+    );
+  }
 
   const resourceLink = draft.resourceType && resourceLinkMap[draft.resourceType];
 
@@ -124,6 +196,8 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
           </button>
         </div>
 
+        {isLoading && draft && <div className="px-5 py-2 text-sm text-slate-600">Loading task...</div>}
+
         <div className="space-y-4 p-5">
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <label className="space-y-1 text-sm text-slate-700">
@@ -132,7 +206,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                 type="text"
                 value={draft.title}
                 onChange={(e) => updateField('title', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isBusy}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
               {errors.title && <p className="text-xs text-rose-600">{errors.title}</p>}
@@ -143,7 +217,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
               <textarea
                 value={draft.description}
                 onChange={(e) => updateField('description', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isBusy}
                 className="min-h-[90px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
               {errors.description && <p className="text-xs text-rose-600">{errors.description}</p>}
@@ -154,8 +228,8 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                 <span className="font-medium">Status</span>
                 <select
                   value={draft.status}
-                  onChange={(e) => updateField('status', e.target.value as TaskStatus)}
-                  disabled={!isEditable}
+                  onChange={(e) => handleStatusChange(e.target.value as TaskStatus)}
+                  disabled={(!isEditable && !allowStatusPatch) || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statuses.map((s) => (
@@ -164,13 +238,14 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                     </option>
                   ))}
                 </select>
+                {errors.status && <p className="text-xs text-rose-600">{errors.status}</p>}
               </label>
               <label className="space-y-1 text-sm text-slate-700">
                 <span className="font-medium">Priority</span>
                 <select
                   value={draft.priority}
-                  onChange={(e) => updateField('priority', e.target.value as TaskPriority)}
-                  disabled={!isEditable}
+                  onChange={(e) => handlePriorityChange(e.target.value as TaskPriority)}
+                  disabled={(!isEditable && !allowPriorityPatch) || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {priorities.map((p) => (
@@ -179,6 +254,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                     </option>
                   ))}
                 </select>
+                {errors.priority && <p className="text-xs text-rose-600">{errors.priority}</p>}
               </label>
               <label className="space-y-1 text-sm text-slate-700">
                 <span className="font-medium">Due date</span>
@@ -186,9 +262,10 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                   type="date"
                   value={draft.dueDate.slice(0, 10)}
                   onChange={(e) => updateField('dueDate', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
+                {errors.dueDate && <p className="text-xs text-rose-600">{errors.dueDate}</p>}
               </label>
             </div>
 
@@ -199,7 +276,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                   type="text"
                   value={draft.assignee}
                   onChange={(e) => updateField('assignee', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -209,7 +286,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                   <select
                     value={draft.resourceType}
                     onChange={(e) => updateField('resourceType', e.target.value as TaskResourceType)}
-                    disabled={!isEditable}
+                    disabled={!isEditable || isBusy}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                   >
                     {resources.map((r) => (
@@ -226,7 +303,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                     placeholder="Resource id (optional)"
                     value={draft.resourceId || ''}
                     onChange={(e) => updateField('resourceId', e.target.value)}
-                    disabled={!isEditable}
+                    disabled={!isEditable || isBusy}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                   />
                   <input
@@ -234,7 +311,7 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
                     placeholder="Resource name (optional)"
                     value={draft.resourceName || ''}
                     onChange={(e) => updateField('resourceName', e.target.value)}
-                    disabled={!isEditable}
+                    disabled={!isEditable || isBusy}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                   />
                 </div>
@@ -263,11 +340,13 @@ const TaskDetailsDrawer: React.FC<Props> = ({ task, isOpen, mode, onClose, onSav
 
         <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isBusy}>
               Cancel
             </Button>
             {isEditable && (
-              <Button onClick={handleSave}>{mode === 'create' ? 'Create task' : 'Save changes'}</Button>
+              <Button onClick={handleSave} disabled={isBusy}>
+                {isSaving ? 'Saving...' : mode === 'create' ? 'Create task' : 'Save changes'}
+              </Button>
             )}
           </div>
         </div>

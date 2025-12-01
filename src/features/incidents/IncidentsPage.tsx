@@ -1,17 +1,18 @@
 import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import IncidentFiltersBar from './components/IncidentFiltersBar';
 import IncidentsTable from './components/IncidentsTable';
 import IncidentDetailsDrawer from './components/IncidentDetailsDrawer';
 import NewIncidentButton from './components/NewIncidentButton';
-import useIncidentsMockData from './hooks/useIncidentsMockData';
-import { IncidentItem, IncidentSeverity, IncidentStatus, IncidentTimelineEvent } from './types';
+import useIncidents from './hooks/useIncidents';
+import { IncidentItem, IncidentSeverity, IncidentStatus } from './types';
 import useNotifications from '../notifications/hooks/useNotifications';
 
 type SeverityFilter = IncidentSeverity | 'all';
 type StatusFilter = IncidentStatus | 'all';
 
 const IncidentsPage: React.FC = () => {
-  const { incidents, setIncidents, isLoading, isError } = useIncidentsMockData();
+  const { incidents, loading, detailLoading, saving, error, refresh, fetchOne, create, update, patch } = useIncidents();
   const { markAsRead, notifications } = useNotifications();
   const [search, setSearch] = React.useState('');
   const [severity, setSeverity] = React.useState<SeverityFilter>('all');
@@ -32,40 +33,35 @@ const IncidentsPage: React.FC = () => {
 
   const handleSelect = (incident: IncidentItem) => {
     setSelected(incident);
-    setMode('view');
+    setMode('edit');
+    if (incident.id) {
+      fetchOne(incident.id)
+        .then((detail) => setSelected(detail))
+        .catch(() => {});
+    }
   };
 
-  const handleSave = (incident: IncidentItem, saveMode: 'create' | 'edit') => {
-    setIncidents((prev) => {
-      if (saveMode === 'edit') {
-        return prev.map((i) => (i.id === incident.id ? { ...incident, lastUpdated: new Date().toISOString() } : i));
+  const handleSave = async (incident: IncidentItem, saveMode: 'create' | 'edit') => {
+    try {
+      if (saveMode === 'create') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...payload } = incident;
+        await create(payload);
+      } else if (incident.id) {
+        await update(incident.id, incident);
       }
-      return [
-        {
-          ...incident,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-          timeline: [
-            {
-              id: `event-${Date.now()}`,
-              timestamp: new Date().toISOString(),
-              actor: 'System',
-              action: 'Incident created',
-            } as IncidentTimelineEvent,
-            ...incident.timeline,
-          ],
-        },
-        ...prev,
-      ];
-    });
-    setSelected(null);
-    setMode('view');
+      await refresh();
+      setSelected(null);
+      setMode('view');
+    } catch (err) {
+      // errors are captured in hook state
+    }
   };
 
   const handleNew = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `inc-${Date.now()}`,
+      id: '',
       title: '',
       systemName: '',
       severity: 'medium',
@@ -81,12 +77,60 @@ const IncidentsPage: React.FC = () => {
     setMode('create');
   };
 
+  const handleStatusChange = async (incidentId: string, nextStatus: IncidentStatus) => {
+    try {
+      await patch(incidentId, { status: nextStatus });
+      await refresh();
+    } catch (err) {
+      // errors are captured in hook state
+    }
+  };
+
   React.useEffect(() => {
-    // Mark any mock incident alerts as read when visiting incidents page
     notifications
       .filter((n) => n.type === 'incident_alert' && !n.read)
       .forEach((n) => markAsRead(n.id));
   }, [notifications, markAsRead]);
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-20 w-full rounded-lg bg-slate-100" />
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="flex items-center justify-between gap-3">
+            <p>{error}</p>
+            <button
+              type="button"
+              className="text-xs font-semibold text-rose-800 underline"
+              onClick={() => refresh()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+          <p className="font-semibold text-slate-900">No incidents match the current filters.</p>
+          <p className="text-slate-600">Try adjusting filters or create a new incident to get started.</p>
+        </div>
+      );
+    }
+
+    return <IncidentsTable incidents={filtered} onSelect={handleSelect} />;
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -107,14 +151,20 @@ const IncidentsPage: React.FC = () => {
         onStatusChange={setStatus}
       />
 
-      <IncidentsTable incidents={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      {renderContent()}
 
       <IncidentDetailsDrawer
         incident={selected}
         isOpen={Boolean(selected)}
         mode={mode}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          setMode('view');
+        }}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
+        onStatusChange={handleStatusChange}
       />
     </div>
   );

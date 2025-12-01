@@ -1,16 +1,17 @@
 import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import TomsFiltersBar from './components/TomsFiltersBar';
 import TomsTable from './components/TomsTable';
 import TomsDetailsDrawer from './components/TomsDetailsDrawer';
 import NewTomButton from './components/NewTomButton';
-import useTomsMockData from './hooks/useTomsMockData';
+import useToms from './hooks/useToms';
 import { TomCategory, TomEffectiveness, TomItem } from './types';
 
 type CategoryFilter = TomCategory | 'all';
 type EffectivenessFilter = TomEffectiveness | 'all';
 
 const TomsPage: React.FC = () => {
-  const { toms, setToms, isLoading, isError } = useTomsMockData();
+  const { toms, loading, detailLoading, saving, error, refresh, fetchOne, create, update } = useToms();
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState<CategoryFilter>('all');
   const [effectiveness, setEffectiveness] = React.useState<EffectivenessFilter>('all');
@@ -28,31 +29,35 @@ const TomsPage: React.FC = () => {
 
   const handleSelect = (tom: TomItem) => {
     setSelected(tom);
-    setMode('view');
+    setMode('edit');
+    if (tom.id) {
+      fetchOne(tom.id)
+        .then((detail) => setSelected(detail))
+        .catch(() => {});
+    }
   };
 
-  const handleSave = (tom: TomItem, saveMode: 'create' | 'edit') => {
-    setToms((prev) => {
-      if (saveMode === 'edit') {
-        return prev.map((t) => (t.id === tom.id ? { ...tom, lastUpdated: new Date().toISOString() } : t));
+  const handleSave = async (tom: TomItem, saveMode: 'create' | 'edit') => {
+    try {
+      if (saveMode === 'create') {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { id, ...payload } = tom;
+        await create(payload);
+      } else if (tom.id) {
+        await update(tom.id, tom);
       }
-      return [
-        {
-          ...tom,
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString(),
-        },
-        ...prev,
-      ];
-    });
-    setSelected(null);
-    setMode('view');
+      await refresh();
+      setSelected(null);
+      setMode('view');
+    } catch (err) {
+      // errors are captured in hook state
+    }
   };
 
   const handleNew = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `tom-${Date.now()}`,
+      id: '',
       name: '',
       category: 'other',
       description: '',
@@ -63,6 +68,46 @@ const TomsPage: React.FC = () => {
       lastUpdated: now,
     });
     setMode('create');
+  };
+
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-20 w-full rounded-lg bg-slate-100" />
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          <div className="flex items-center justify-between gap-3">
+            <p>{error}</p>
+            <button
+              type="button"
+              className="text-xs font-semibold text-rose-800 underline"
+              onClick={() => refresh()}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (filtered.length === 0) {
+      return (
+        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
+          <p className="font-semibold text-slate-900">No measures match the current filters.</p>
+          <p className="text-slate-600">Try adjusting filters or create a new TOM.</p>
+        </div>
+      );
+    }
+
+    return <TomsTable toms={filtered} onSelect={handleSelect} />;
   };
 
   return (
@@ -84,14 +129,19 @@ const TomsPage: React.FC = () => {
         onEffectivenessChange={setEffectiveness}
       />
 
-      <TomsTable toms={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      {renderContent()}
 
       <TomsDetailsDrawer
         tom={selected}
         isOpen={Boolean(selected)}
         mode={mode}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null);
+          setMode('view');
+        }}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
       />
     </div>
   );

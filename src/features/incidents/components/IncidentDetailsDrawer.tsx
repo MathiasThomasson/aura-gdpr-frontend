@@ -10,16 +10,34 @@ type Props = {
   incident: IncidentItem | null;
   isOpen: boolean;
   mode: Mode;
+  isLoading?: boolean;
+  isSaving?: boolean;
   onClose: () => void;
-  onSave: (incident: IncidentItem, mode: 'create' | 'edit') => void;
+  onSave: (incident: IncidentItem, mode: 'create' | 'edit') => void | Promise<void>;
+  onStatusChange?: (id: string, status: IncidentStatus) => Promise<void>;
 };
 
 const severityOptions: IncidentSeverity[] = ['low', 'medium', 'high', 'critical'];
 const statusOptions: IncidentStatus[] = ['open', 'investigating', 'contained', 'resolved', 'closed'];
 
-const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClose, onSave }) => {
+const IncidentDetailsDrawer: React.FC<Props> = ({
+  incident,
+  isOpen,
+  mode,
+  isLoading,
+  isSaving: isSavingProp,
+  onClose,
+  onSave,
+  onStatusChange,
+}) => {
   const [draft, setDraft] = React.useState<IncidentItem | null>(incident);
-  const [errors, setErrors] = React.useState<{ title?: string; systemName?: string; description?: string }>({});
+  const [errors, setErrors] = React.useState<{
+    title?: string;
+    systemName?: string;
+    description?: string;
+    severity?: string;
+    status?: string;
+  }>({});
   const [newEvent, setNewEvent] = React.useState<{ actor: string; action: string; notes?: string }>({
     actor: '',
     action: '',
@@ -63,26 +81,44 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !draft) return null;
+  if (!isOpen || (!draft && !isLoading)) return null;
 
-  const isEditable = mode === 'create' || mode === 'edit';
+  const isEditable = (mode === 'create' || mode === 'edit') && !isLoading;
+  const allowStatusPatch = onStatusChange && draft?.id && mode !== 'create';
+  const isSaving = Boolean(isSavingProp);
+  const isBusy = Boolean(isLoading || isSaving);
 
   const updateField = <K extends keyof IncidentItem>(key: K, value: IncidentItem[K]) => {
     setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
   };
 
   const validate = () => {
-    const next: { title?: string; systemName?: string; description?: string } = {};
+    const next: {
+      title?: string;
+      systemName?: string;
+      description?: string;
+      severity?: string;
+      status?: string;
+    } = {};
     if (!draft.title.trim()) next.title = 'Title is required.';
     if (!draft.systemName.trim()) next.systemName = 'System name is required.';
     if (!draft.description.trim()) next.description = 'Description is required.';
+    if (!draft.severity) next.severity = 'Severity is required.';
+    if (!draft.status) next.status = 'Status is required.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
-    onSave(draft, mode === 'create' ? 'create' : 'edit');
+    await onSave(draft, mode === 'create' ? 'create' : 'edit');
+  };
+
+  const handleStatusChange = async (nextStatus: IncidentStatus) => {
+    updateField('status', nextStatus);
+    if (allowStatusPatch && draft?.id) {
+      await onStatusChange?.(draft.id, nextStatus);
+    }
   };
 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -103,6 +139,33 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
     setDraft((prev) => (prev ? { ...prev, timeline: [event, ...prev.timeline] } : prev));
     setNewEvent({ actor: '', action: '', notes: '' });
   };
+
+  if (!draft && isLoading) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-sm"
+        onMouseDown={handleOverlayClick}
+      >
+        <div className="flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white shadow-2xl" ref={panelRef}>
+          <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+            <div className="space-y-1">
+              <h2 className="text-lg font-semibold text-slate-900">Incident</h2>
+              <p className="text-sm text-slate-600">Loading incident...</p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+              aria-label="Close"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="p-5 text-sm text-slate-600">Loading incident...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -127,6 +190,10 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
           </button>
         </div>
 
+        {isLoading && draft && (
+          <div className="px-5 py-2 text-sm text-slate-600">Loading incident...</div>
+        )}
+
         <div className="space-y-4 p-5">
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -136,7 +203,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                   type="text"
                   value={draft.title}
                   onChange={(e) => updateField('title', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
                 {errors.title && <p className="text-xs text-rose-600">{errors.title}</p>}
@@ -147,7 +214,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                   type="text"
                   value={draft.systemName}
                   onChange={(e) => updateField('systemName', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
                 {errors.systemName && <p className="text-xs text-rose-600">{errors.systemName}</p>}
@@ -160,7 +227,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                 <select
                   value={draft.severity}
                   onChange={(e) => updateField('severity', e.target.value as IncidentSeverity)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {severityOptions.map((s) => (
@@ -169,13 +236,14 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                     </option>
                   ))}
                 </select>
+                {errors.severity && <p className="text-xs text-rose-600">{errors.severity}</p>}
               </label>
               <label className="space-y-1 text-sm text-slate-700">
                 <span className="font-medium">Status</span>
                 <select
                   value={draft.status}
-                  onChange={(e) => updateField('status', e.target.value as IncidentStatus)}
-                  disabled={!isEditable}
+                  onChange={(e) => handleStatusChange(e.target.value as IncidentStatus)}
+                  disabled={(!isEditable && !allowStatusPatch) || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statusOptions.map((s) => (
@@ -184,6 +252,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                     </option>
                   ))}
                 </select>
+                {errors.status && <p className="text-xs text-rose-600">{errors.status}</p>}
               </label>
               <div className="space-y-1 text-sm text-slate-700">
                 <span className="font-medium">Detection method</span>
@@ -191,7 +260,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                   type="text"
                   value={draft.detectionMethod}
                   onChange={(e) => updateField('detectionMethod', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </div>
@@ -202,7 +271,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
               <textarea
                 value={draft.description}
                 onChange={(e) => updateField('description', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isBusy}
                 className="min-h-[90px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
               {errors.description && <p className="text-xs text-rose-600">{errors.description}</p>}
@@ -211,22 +280,22 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="space-y-1 text-sm text-slate-700">
                 <span className="font-medium">Affected data</span>
-                <textarea
-                  value={draft.affectedData}
-                  onChange={(e) => updateField('affectedData', e.target.value)}
-                  disabled={!isEditable}
-                  className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
-                />
-              </label>
-              <label className="space-y-1 text-sm text-slate-700">
-                <span className="font-medium">Affected subjects</span>
-                <textarea
-                  value={draft.affectedSubjects}
-                  onChange={(e) => updateField('affectedSubjects', e.target.value)}
-                  disabled={!isEditable}
-                  className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
-                />
-              </label>
+              <textarea
+                value={draft.affectedData}
+                onChange={(e) => updateField('affectedData', e.target.value)}
+                disabled={!isEditable || isBusy}
+                className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
+              />
+            </label>
+            <label className="space-y-1 text-sm text-slate-700">
+              <span className="font-medium">Affected subjects</span>
+              <textarea
+                value={draft.affectedSubjects}
+                onChange={(e) => updateField('affectedSubjects', e.target.value)}
+                disabled={!isEditable || isBusy}
+                className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
+              />
+            </label>
             </div>
           </div>
 
@@ -258,6 +327,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                     placeholder="Actor"
                     value={newEvent.actor}
                     onChange={(e) => setNewEvent((prev) => ({ ...prev, actor: e.target.value }))}
+                    disabled={isBusy}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                   />
                   <input
@@ -265,6 +335,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                     placeholder="Action"
                     value={newEvent.action}
                     onChange={(e) => setNewEvent((prev) => ({ ...prev, action: e.target.value }))}
+                    disabled={isBusy}
                     className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                   />
                 </div>
@@ -272,9 +343,10 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                   placeholder="Notes (optional)"
                   value={newEvent.notes}
                   onChange={(e) => setNewEvent((prev) => ({ ...prev, notes: e.target.value }))}
+                  disabled={isBusy}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
-                <Button type="button" variant="outline" size="sm" onClick={addTimelineEvent}>
+                <Button type="button" variant="outline" size="sm" onClick={addTimelineEvent} disabled={isBusy}>
                   Add event
                 </Button>
               </div>
@@ -288,11 +360,13 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
               <ExportPdfButton resourceType="incident" resourceId={draft.id} />
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={onClose}>
+              <Button variant="outline" onClick={onClose} disabled={isBusy}>
                 Cancel
               </Button>
               {isEditable && (
-                <Button onClick={handleSave}>{mode === 'create' ? 'Create incident' : 'Save changes'}</Button>
+                <Button onClick={handleSave} disabled={isBusy}>
+                  {isSaving ? 'Saving...' : mode === 'create' ? 'Create incident' : 'Save changes'}
+                </Button>
               )}
             </div>
           </div>
