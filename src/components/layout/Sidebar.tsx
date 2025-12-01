@@ -13,6 +13,7 @@ import {
   FileText,
   Gauge,
   Inbox,
+  Sparkles,
   LayoutDashboard,
   LucideIcon,
   Settings as SettingsIcon,
@@ -69,7 +70,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'AI Assistant', path: '/app/ai-assistant', icon: Sparkles },
       { label: 'AI Policy Generator', icon: FileText, disabled: true },
-      { label: 'AI Audit Engine', icon: Gauge, disabled: true },
+      { label: 'AI Audit Engine', path: '/app/ai-audit', icon: Gauge },
     ],
   },
   {
