@@ -22,6 +22,7 @@ import AdminDsrPortalSettingsPage from '@/pages/AdminDsrPortalSettingsPage';
 import NotificationSettingsPage from '@/pages/NotificationSettingsPage';
 import PoliciesPage from '@/pages/PoliciesPage';
 import IncidentsPage from '@/pages/IncidentsPage';
+import RopaPage from '@/pages/RopaPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
@@ -58,6 +59,7 @@ const AppRoutes = () => (
       <Route path="risk-matrix" element={<RiskMatrixPage />} />
       <Route path="dsr" element={<DataSubjectRequestsPage />} />
       <Route path="dpia" element={<DpiaPage />} />
+      <Route path="ropa" element={<RopaPage />} />
       <Route path="policies" element={<PoliciesPage />} />
       <Route path="incidents" element={<IncidentsPage />} />
       <Route path="notifications" element={<NotificationsPage />} />

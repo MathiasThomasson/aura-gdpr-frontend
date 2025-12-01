@@ -18,7 +18,6 @@ import {
   LucideIcon,
   Settings as SettingsIcon,
   ShieldCheck,
-  Sparkles,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -61,6 +60,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Projects', path: '/app/projects', icon: Briefcase },
       { label: 'Risk Matrix', path: '/app/risk-matrix', icon: Activity },
       { label: 'Audit Log', path: '/app/audit', icon: ClipboardList },
+      { label: 'ROPA', path: '/app/ropa', icon: Database },
       { label: 'Notifications', path: '/app/notifications', icon: Bell },
       { label: 'Admin', path: '/app/admin', icon: ShieldCheck, adminOnly: true },
     ],
