@@ -1,5 +1,16 @@
 import api from '@/lib/apiClient';
-import type { PolicyItem } from './types';
+import type { PolicyItem, PolicyType } from './types';
+
+export interface GeneratePolicyInput {
+  policyType: PolicyType;
+  contextDescription?: string;
+}
+
+export interface GeneratePolicyResult {
+  title: string;
+  summary: string;
+  content: string;
+}
 
 const mapPolicy = (item: any): PolicyItem => ({
   ...item,
@@ -42,16 +53,21 @@ export async function patchPolicy(id: string, payload: Partial<PolicyItem>): Pro
   return mapPolicy(res.data);
 }
 
-// AI generation remains stubbed until backend is wired.
-export async function generatePolicyWithAi(): Promise<{
-  title: string;
-  summary: string;
-  content: string;
-}> {
-  return Promise.resolve({
-    title: 'Privacy Policy',
-    summary: 'This policy explains how we collect, use, and protect personal data across our services.',
-    content:
-      'This AI-generated policy draft outlines how personal data is collected, used, and protected. It should include sections for Introduction, Data We Collect, Legal Bases, Data Sharing, Data Retention, Data Subject Rights, Security Measures, International Transfers, and Contact Information. Please review and tailor this draft to your organization before publishing.',
-  });
+export async function generatePolicyWithAi(input: GeneratePolicyInput): Promise<GeneratePolicyResult> {
+  try {
+    const res = await api.post('/api/ai/policies/generate', {
+      policy_type: input.policyType,
+      context_description: input.contextDescription ?? '',
+      language: 'en',
+    });
+
+    const data = res.data ?? {};
+    return {
+      title: data.title ?? '',
+      summary: data.summary ?? '',
+      content: data.content ?? '',
+    };
+  } catch (error) {
+    throw new Error('Failed to generate policy with AI');
+  }
 }

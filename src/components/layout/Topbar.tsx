@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle2, CreditCard, LogOut, Menu, Settings as SettingsIcon, User as UserIcon } from 'lucide-react';
+import { Bell, CheckCircle2, CreditCard, LogOut, Menu, Settings as SettingsIcon, Sparkles, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import useNotifications from '@/features/notifications/hooks/useNotifications';
 
 type TopbarProps = {
   onMenuClick?: () => void;
+  onAskAura?: () => void;
 };
 
 type AuthUser = {
@@ -57,7 +58,7 @@ const getInitials = (name?: string) => {
   return `${parts[0][0].toUpperCase()}${parts[parts.length - 1][0].toUpperCase()}`;
 };
 
-const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
+const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onAskAura }) => {
   const { user, logout } = useAuth() as { user: AuthUser | null; logout: () => void };
   const { notifications, unreadCount, markAsRead } = useNotifications();
   const navigate = useNavigate();
@@ -108,6 +109,14 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
             <CheckCircle2 className="h-4 w-4" />
             {planLabel}
           </Badge>
+          <Button
+            size="sm"
+            className="hidden sm:inline-flex items-center gap-2 bg-sky-600 text-white hover:bg-sky-700"
+            onClick={() => onAskAura?.()}
+          >
+            <Sparkles className="h-4 w-4" />
+            Ask AURA
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

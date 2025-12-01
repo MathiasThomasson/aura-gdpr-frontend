@@ -1,17 +1,14 @@
 import React from 'react';
 import { ChevronDown, FilePlus2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PolicyType, policyTypeLabels } from '../types';
-
-type AiInput = {
-  type: PolicyType;
-  contextDescription?: string;
-};
+import { policyTypeLabels, PolicyType } from '../types';
+import type { GeneratePolicyInput } from '../api';
 
 type Props = {
   onNewBlank: () => void;
-  onGenerateWithAi: (input: AiInput) => void;
+  onGenerateWithAi: (input: GeneratePolicyInput) => void;
   aiGenerating?: boolean;
+  aiError?: string | null;
 };
 
 const templateTypes: PolicyType[] = [
@@ -21,12 +18,14 @@ const templateTypes: PolicyType[] = [
   'data_retention_policy',
   'information_security_policy',
   'internal_guideline',
-  'other',
 ];
 
-const NewPolicyMenu: React.FC<Props> = ({ onNewBlank, onGenerateWithAi, aiGenerating }) => {
+const NewPolicyMenu: React.FC<Props> = ({ onNewBlank, onGenerateWithAi, aiGenerating, aiError }) => {
   const [open, setOpen] = React.useState(false);
-  const [aiForm, setAiForm] = React.useState<AiInput>({ type: 'privacy_policy', contextDescription: '' });
+  const [aiForm, setAiForm] = React.useState<GeneratePolicyInput>({
+    policyType: 'privacy_policy',
+    contextDescription: '',
+  });
 
   const handleGenerate = () => {
     onGenerateWithAi(aiForm);
@@ -61,9 +60,10 @@ const NewPolicyMenu: React.FC<Props> = ({ onNewBlank, onGenerateWithAi, aiGenera
             <p className="mt-1 text-xs text-slate-500">Provide context to draft a policy.</p>
             <div className="mt-3 space-y-2">
               <select
-                value={aiForm.type}
-                onChange={(e) => setAiForm((prev) => ({ ...prev, type: e.target.value as PolicyType }))}
-                className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+                value={aiForm.policyType}
+                onChange={(e) => setAiForm((prev) => ({ ...prev, policyType: e.target.value as PolicyType }))}
+                disabled={aiGenerating}
+                className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               >
                 {templateTypes.map((t) => (
                   <option key={t} value={t}>
@@ -75,7 +75,8 @@ const NewPolicyMenu: React.FC<Props> = ({ onNewBlank, onGenerateWithAi, aiGenera
                 value={aiForm.contextDescription}
                 onChange={(e) => setAiForm((prev) => ({ ...prev, contextDescription: e.target.value }))}
                 placeholder="Short context (e.g. SaaS company serving EU customers)"
-                className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+                disabled={aiGenerating}
+                className="w-full rounded-md border border-slate-200 px-2 py-2 text-sm text-slate-800 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 rows={3}
               />
               <Button
@@ -83,8 +84,9 @@ const NewPolicyMenu: React.FC<Props> = ({ onNewBlank, onGenerateWithAi, aiGenera
                 onClick={handleGenerate}
                 disabled={aiGenerating}
               >
-                {aiGenerating ? 'Generating...' : 'Generate policy draft'}
+                {aiGenerating ? 'Generating with AI…' : 'Generate policy draft'}
               </Button>
+              {aiError && <p className="text-xs text-rose-600">{aiError}</p>}
             </div>
           </div>
         </div>

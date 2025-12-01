@@ -5,8 +5,8 @@ import PolicyTable from './components/PolicyTable';
 import PolicyDetailsDrawer from './components/PolicyDetailsDrawer';
 import NewPolicyMenu from './components/NewPolicyMenu';
 import { usePolicies } from './hooks/usePolicies';
-import { PolicyItem, PolicyStatus, PolicyType, GeneratePolicyInput } from './types';
-import { generatePolicyWithAi } from './api';
+import { PolicyItem, PolicyStatus, PolicyType } from './types';
+import { generatePolicyWithAi, type GeneratePolicyInput } from './api';
 
 type FilterStatus = PolicyStatus | 'all';
 type FilterType = PolicyType | 'all';
@@ -20,6 +20,15 @@ const PoliciesPage: React.FC = () => {
   const [mode, setMode] = React.useState<'view' | 'create' | 'edit'>('view');
   const [aiGenerating, setAiGenerating] = React.useState(false);
   const [lastAiInput, setLastAiInput] = React.useState<GeneratePolicyInput | null>(null);
+  const [aiError, setAiError] = React.useState<string | null>(null);
+  const [showAiDraftNote, setShowAiDraftNote] = React.useState(false);
+
+  const handleCloseDrawer = () => {
+    setSelected(null);
+    setMode('view');
+    setAiError(null);
+    setShowAiDraftNote(false);
+  };
 
   const filtered = React.useMemo(() => {
     return policies.filter((policy) => {
@@ -36,6 +45,8 @@ const PoliciesPage: React.FC = () => {
   const handleSelect = (policy: PolicyItem) => {
     setSelected(policy);
     setMode('view');
+    setShowAiDraftNote(false);
+    setAiError(null);
     if (policy.id) {
       fetchOne(policy.id).then((detail) => setSelected(detail)).catch(() => {});
     }
@@ -50,12 +61,13 @@ const PoliciesPage: React.FC = () => {
       await update(policy.id, policy);
     }
     await refresh();
-    setSelected(null);
-    setMode('view');
+    handleCloseDrawer();
   };
 
   const handleCreateBlank = () => {
     const now = new Date().toISOString();
+    setShowAiDraftNote(false);
+    setAiError(null);
     setSelected({
       id: '',
       name: 'New policy',
@@ -74,13 +86,14 @@ const PoliciesPage: React.FC = () => {
   const handleGenerateWithAi = async (input: GeneratePolicyInput) => {
     setAiGenerating(true);
     setLastAiInput(input);
+    setAiError(null);
     try {
       const result = await generatePolicyWithAi(input);
       const now = new Date().toISOString();
       setSelected({
         id: `policy-${Date.now()}`,
         name: result.title,
-        type: input.type,
+        type: input.policyType,
         status: 'draft',
         owner: 'You',
         lastUpdated: now,
@@ -90,6 +103,9 @@ const PoliciesPage: React.FC = () => {
         tags: ['ai-draft'],
       });
       setMode('create');
+      setShowAiDraftNote(true);
+    } catch (err) {
+      setAiError('Failed to generate policy with AI. Please try again.');
     } finally {
       setAiGenerating(false);
     }
@@ -98,7 +114,9 @@ const PoliciesPage: React.FC = () => {
   const handleRegenerateAi = async (input?: GeneratePolicyInput) => {
     const payload = input ?? lastAiInput;
     if (!payload) return;
+    setLastAiInput(payload);
     setAiGenerating(true);
+    setAiError(null);
     try {
       const result = await generatePolicyWithAi(payload);
       setSelected((prev) =>
@@ -112,6 +130,9 @@ const PoliciesPage: React.FC = () => {
             }
           : prev
       );
+      setShowAiDraftNote(true);
+    } catch (err) {
+      setAiError('Failed to generate policy with AI. Please try again.');
     } finally {
       setAiGenerating(false);
     }
@@ -124,8 +145,18 @@ const PoliciesPage: React.FC = () => {
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Policies</h1>
           <p className="text-sm text-slate-600">Manage your GDPR-related policies and keep them up to date.</p>
         </div>
-        <NewPolicyMenu onNewBlank={handleCreateBlank} onGenerateWithAi={handleGenerateWithAi} aiGenerating={aiGenerating} />
+        <NewPolicyMenu
+          onNewBlank={handleCreateBlank}
+          onGenerateWithAi={handleGenerateWithAi}
+          aiGenerating={aiGenerating}
+          aiError={aiError}
+        />
       </div>
+      {aiError && (
+        <p className="text-sm text-rose-600" role="alert">
+          {aiError}
+        </p>
+      )}
 
       <PageInfoBox
         title="Policy center"
@@ -148,12 +179,14 @@ const PoliciesPage: React.FC = () => {
         policy={selected}
         isOpen={Boolean(selected)}
         mode={mode}
-        onClose={() => setSelected(null)}
+        onClose={handleCloseDrawer}
         onSave={handleSave}
         isLoading={detailLoading}
         isSaving={saving}
-        onRegenerateAi={mode === 'create' ? handleRegenerateAi : undefined}
+        onRegenerateAi={mode === 'create' && lastAiInput ? handleRegenerateAi : undefined}
         aiGenerating={aiGenerating}
+        aiError={aiError}
+        showAiDraftNote={showAiDraftNote}
       />
     </div>
   );

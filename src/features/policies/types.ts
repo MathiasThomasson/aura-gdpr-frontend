@@ -23,17 +23,6 @@ export interface PolicyItem {
   content?: string;
 }
 
-export interface GeneratePolicyInput {
-  type: PolicyType;
-  contextDescription?: string;
-}
-
-export interface GeneratePolicyResult {
-  title: string;
-  summary: string;
-  content: string;
-}
-
 export const policyStatusLabels: Record<PolicyStatus, string> = {
   draft: 'Draft',
   in_review: 'In review',

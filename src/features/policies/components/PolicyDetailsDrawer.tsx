@@ -8,8 +8,8 @@ import {
   PolicyType,
   policyStatusLabels,
   policyTypeLabels,
-  GeneratePolicyInput,
 } from '../types';
+import type { GeneratePolicyInput } from '../api';
 import PolicyStatusBadge from './PolicyStatusBadge';
 
 type Mode = 'view' | 'create' | 'edit';
@@ -24,6 +24,8 @@ type Props = {
   aiGenerating?: boolean;
   isLoading?: boolean;
   isSaving?: boolean;
+  aiError?: string | null;
+  showAiDraftNote?: boolean;
 };
 
 const statusOptions: PolicyStatus[] = ['draft', 'in_review', 'approved', 'published', 'archived'];
@@ -60,6 +62,8 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
   aiGenerating,
   isLoading = false,
   isSaving = false,
+  aiError = null,
+  showAiDraftNote = false,
 }) => {
   const [draft, setDraft] = React.useState<PolicyItem | null>(policy);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -119,7 +123,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
 
   const handleRegenerate = async () => {
     if (!onRegenerateAi) return;
-    await onRegenerateAi({ type: draft.type, contextDescription: draft.summary });
+    await onRegenerateAi({ policyType: draft.type, contextDescription: draft.summary });
   };
 
   return (
@@ -239,24 +243,25 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
               />
             </label>
 
-            {mode === 'create' && (
-              <p className="text-xs text-slate-500">
-                This is an AI-generated draft. Please review and adapt before publishing.
-              </p>
+            {showAiDraftNote && (
+              <p className="text-xs text-slate-500">This is an AI-generated draft. Please review before publishing.</p>
             )}
 
             {onRegenerateAi && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="inline-flex items-center gap-2"
-                onClick={handleRegenerate}
-                disabled={aiGenerating}
-              >
-                <RotateCw className="h-4 w-4" />
-                {aiGenerating ? 'Regenerating...' : 'Regenerate with AI'}
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="inline-flex items-center gap-2"
+                  onClick={handleRegenerate}
+                  disabled={aiGenerating}
+                >
+                  <RotateCw className="h-4 w-4" />
+                  {aiGenerating ? 'Regenerating with AI…' : 'Regenerate with AI'}
+                </Button>
+                {aiError && <p className="text-xs text-rose-600">{aiError}</p>}
+              </div>
             )}
           </div>
 
