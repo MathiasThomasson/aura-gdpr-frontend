@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ExportPdfButton from '@/features/pdf-export/components/ExportPdfButton';
 import { IncidentItem, IncidentSeverity, IncidentStatus, IncidentTimelineEvent } from '../types';
 
 type Mode = 'view' | 'edit' | 'create';
@@ -240,7 +241,7 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
                   <div>
                     <p className="text-sm font-semibold text-slate-900">{event.action}</p>
                     <p className="text-xs text-slate-500">
-                      {new Date(event.timestamp).toLocaleString()} • {event.actor}
+                      {new Date(event.timestamp).toLocaleString()} - {event.actor}
                     </p>
                     {event.notes && <p className="text-xs text-slate-600">{event.notes}</p>}
                   </div>
@@ -282,13 +283,18 @@ const IncidentDetailsDrawer: React.FC<Props> = ({ incident, isOpen, mode, onClos
         </div>
 
         <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            {isEditable && (
-              <Button onClick={handleSave}>{mode === 'create' ? 'Create incident' : 'Save changes'}</Button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {mode !== 'create' && draft.id && (
+              <ExportPdfButton resourceType="incident" resourceId={draft.id} />
             )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              {isEditable && (
+                <Button onClick={handleSave}>{mode === 'create' ? 'Create incident' : 'Save changes'}</Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

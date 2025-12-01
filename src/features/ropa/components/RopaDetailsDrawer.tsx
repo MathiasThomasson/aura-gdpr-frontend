@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ExportPdfButton from '@/features/pdf-export/components/ExportPdfButton';
 import { ProcessingCategory, RopaItem } from '../types';
 
 type Mode = 'view' | 'edit' | 'create';
@@ -268,13 +269,18 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
         </div>
 
         <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            {isEditable && (
-              <Button onClick={handleSave}>{mode === 'create' ? 'Create record' : 'Save changes'}</Button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            {mode !== 'create' && draft.id && (
+              <ExportPdfButton resourceType="ropa" resourceId={draft.id} />
             )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              {isEditable && (
+                <Button onClick={handleSave}>{mode === 'create' ? 'Create record' : 'Save changes'}</Button>
+              )}
+            </div>
           </div>
         </div>
       </div>

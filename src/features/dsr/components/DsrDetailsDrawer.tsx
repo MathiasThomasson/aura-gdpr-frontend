@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Mail, Calendar, User, Hash, Info, Clock, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ExportPdfButton from '@/features/pdf-export/components/ExportPdfButton';
 import { DataSubjectRequest, DataSubjectRequestStatus } from '../types';
 import DsrStatusBadge from './DsrStatusBadge';
 
@@ -172,7 +173,7 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <Clock className="h-4 w-4 text-slate-500" />
               <span>
-                Due: {formatDateOnly(dsr.dueDate ?? dsr.due_at)} •{' '}
+                Due: {formatDateOnly(dsr.dueDate ?? dsr.due_at)} -{' '}
                 <span
                   className={
                     dueInfo.tone === 'ok'
@@ -193,7 +194,7 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
               <Info className="h-4 w-4 text-sky-600" />
               <h3 className="text-sm font-semibold text-slate-900">Details</h3>
             </div>
-            <p className="mt-2 text-sm text-slate-700 whitespace-pre-wrap">
+            <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
               {dsr.description || 'No additional details provided.'}
             </p>
           </div>
@@ -219,23 +220,30 @@ const DsrDetailsDrawer: React.FC<DsrDetailsDrawerProps> = ({
         </div>
 
         <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">
-          <div className="flex flex-wrap gap-2">
-            {transitions[dsr.status].length === 0 && (
-              <Button variant="outline" disabled className="cursor-not-allowed">
-                No further actions
-              </Button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {dsr.id ? (
+              <ExportPdfButton resourceType="dsr" resourceId={dsr.id} />
+            ) : (
+              <div className="h-9" aria-hidden />
             )}
-            {transitions[dsr.status].map((next) => (
-              <Button
-                key={next}
-                variant="outline"
-                size="sm"
-                disabled={isUpdating}
-                onClick={() => onStatusChange(next)}
-              >
-                {statusLabels[next] || 'Update status'}
-              </Button>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {transitions[dsr.status].length === 0 && (
+                <Button variant="outline" disabled className="cursor-not-allowed">
+                  No further actions
+                </Button>
+              )}
+              {transitions[dsr.status].map((next) => (
+                <Button
+                  key={next}
+                  variant="outline"
+                  size="sm"
+                  disabled={isUpdating}
+                  onClick={() => onStatusChange(next)}
+                >
+                  {statusLabels[next] || 'Update status'}
+                </Button>
+              ))}
+            </div>
           </div>
           {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
         </div>
