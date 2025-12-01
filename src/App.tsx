@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
-import { NotificationsProvider } from '@/features/notifications/hooks/useNotifications';
+import NotificationsProvider from '@/features/notifications/NotificationsProvider';
 import AppRoutes from '@/routes';
 
 const App: React.FC = () => {

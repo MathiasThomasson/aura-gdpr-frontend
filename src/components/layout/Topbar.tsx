@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { useNotifications } from '@/features/notifications/hooks/useNotifications';
+import useNotifications from '@/features/notifications/hooks/useNotifications';
 
 type TopbarProps = {
   onMenuClick?: () => void;

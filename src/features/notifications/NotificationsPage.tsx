@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import NotificationsList from './components/NotificationsList';
-import { useNotifications } from './hooks/useNotifications';
+import useNotifications from './hooks/useNotifications';
 
 const NotificationsPage: React.FC = () => {
   const { notifications, markAllAsRead } = useNotifications();
