@@ -81,6 +81,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Billing', path: '/app/billing', icon: CreditCard },
       { label: 'Settings', path: '/app/settings', icon: SettingsIcon },
+      { label: 'IAM', path: '/app/iam', icon: ShieldCheck },
     ],
   },
 ];

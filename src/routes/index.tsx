@@ -25,6 +25,7 @@ import IncidentsPage from '@/pages/IncidentsPage';
 import RopaPage from '@/pages/RopaPage';
 import TomsPage from '@/pages/TomsPage';
 import CookiesPage from '@/pages/CookiesPage';
+import IamPage from '@/pages/IamPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
@@ -68,6 +69,7 @@ const AppRoutes = () => (
       <Route path="toms" element={<TomsPage />} />
       <Route path="notifications" element={<NotificationsPage />} />
       <Route path="billing" element={<BillingPage />} />
+      <Route path="iam" element={<IamPage />} />
       <Route path="settings" element={<AccountSettingsPage />} />
       <Route path="settings/notifications" element={<NotificationSettingsPage />} />
       <Route path="admin" element={<AdminPage />} />
