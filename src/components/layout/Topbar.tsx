@@ -1,14 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  Bell,
-  CheckCircle2,
-  CreditCard,
-  LogOut,
-  Menu,
-  Settings as SettingsIcon,
-  User as UserIcon,
-} from 'lucide-react';
+import { Bell, CheckCircle2, CreditCard, LogOut, Menu, Settings as SettingsIcon, User as UserIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,17 +14,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
+import { useNotifications } from '@/features/notifications/hooks/useNotifications';
 
 type TopbarProps = {
   onMenuClick?: () => void;
-};
-
-type NotificationTone = 'info' | 'success' | 'warning';
-
-type Notification = {
-  id: string;
-  message: string;
-  tone: NotificationTone;
 };
 
 type AuthUser = {
@@ -60,21 +45,10 @@ const PAGE_TITLES: Record<string, string> = {
   '/app/settings/notifications': 'Notification Settings',
   '/app/admin': 'Admin',
   '/app/admin/dsr-portal': 'DSR Portal Admin',
+  '/app/notifications': 'Notifications',
 };
-
-const notifications: Notification[] = [
-  { id: 'dsr', message: 'No pending Data Subject Requests.', tone: 'info' },
-  { id: 'audit', message: 'Your last AI audit completed successfully.', tone: 'success' },
-  { id: 'policies', message: 'You have 0 policies expiring this month.', tone: 'warning' },
-];
 
 const currentPlan = { type: 'pro', trialDaysLeft: 0 };
-
-const toneStyles: Record<NotificationTone, string> = {
-  info: 'bg-sky-500',
-  success: 'bg-emerald-500',
-  warning: 'bg-amber-500',
-};
 
 const getInitials = (name?: string) => {
   if (!name) return 'AU';
@@ -85,6 +59,7 @@ const getInitials = (name?: string) => {
 
 const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuth() as { user: AuthUser | null; logout: () => void };
+  const { notifications, unreadCount, markAsRead } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -92,9 +67,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   const role = user?.role || 'Member';
   const tenantName = user?.tenantName || 'Acme Privacy Ltd.';
   const planLabel =
-    currentPlan.trialDaysLeft > 0
-      ? `Free trial – ${currentPlan.trialDaysLeft} days left`
-      : 'Pro plan';
+    currentPlan.trialDaysLeft > 0 ? `Free trial - ${currentPlan.trialDaysLeft} days left` : 'Pro plan';
   const currentPageTitle = PAGE_TITLES[location.pathname] ?? 'Dashboard';
 
   const handleSignOut = () => {
@@ -145,23 +118,60 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
                 aria-label="Notifications"
               >
                 <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-semibold text-white">
+                    {unreadCount}
+                  </span>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80 p-2">
               <DropdownMenuLabel className="text-xs uppercase text-slate-500">Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="space-y-1">
-                {notifications.map((notification) => (
-                  <DropdownMenuItem key={notification.id} className="items-start gap-3 px-2 py-2">
+              <div className="max-h-80 space-y-1 overflow-y-auto">
+                {notifications.slice(0, 5).map((notification) => (
+                  <DropdownMenuItem
+                    key={notification.id}
+                    className="items-start gap-3 px-2 py-2"
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      markAsRead(notification.id);
+                      if (notification.link) {
+                        navigate(notification.link);
+                      }
+                    }}
+                  >
                     <span
-                      className={cn('mt-1 h-2.5 w-2.5 rounded-full', toneStyles[notification.tone])}
+                      className={cn(
+                        'mt-1 h-2.5 w-2.5 rounded-full',
+                        notification.severity === 'info'
+                          ? 'bg-sky-500'
+                          : notification.severity === 'warning'
+                          ? 'bg-amber-500'
+                          : 'bg-rose-500'
+                      )}
                       aria-hidden
                     />
-                    <span className="text-sm text-slate-700">{notification.message}</span>
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-semibold text-slate-900">{notification.title}</p>
+                      <p className="text-xs text-slate-600 line-clamp-2">{notification.description}</p>
+                    </div>
                   </DropdownMenuItem>
                 ))}
+                {notifications.length === 0 && (
+                  <div className="px-2 py-3 text-sm text-slate-500">No notifications yet.</div>
+                )}
               </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="justify-center text-sm font-semibold text-sky-700"
+                onSelect={(e) => {
+                  e.preventDefault();
+                  navigate('/app/notifications');
+                }}
+              >
+                View all notifications
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 

@@ -3,6 +3,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { NotificationsProvider } from '@/features/notifications/hooks/useNotifications';
 import AppRoutes from '@/routes';
 
 const App: React.FC = () => {
@@ -10,8 +11,10 @@ const App: React.FC = () => {
     <Router>
       <ThemeProvider>
         <AuthProvider>
-          <AppRoutes />
-          <Toaster />
+          <NotificationsProvider>
+            <AppRoutes />
+            <Toaster />
+          </NotificationsProvider>
         </AuthProvider>
       </ThemeProvider>
     </Router>

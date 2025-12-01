@@ -16,6 +16,7 @@ import RiskMatrixPage from '@/pages/RiskMatrixPage';
 import DpiaPage from '@/pages/DpiaPage';
 import DataSubjectRequestsPage from '@/pages/DataSubjectRequestsPage';
 import DsrPortalPage from '@/pages/DsrPortalPage';
+import NotificationsPage from '@/features/notifications/NotificationsPage';
 import AdminDsrPortalSettingsPage from '@/pages/AdminDsrPortalSettingsPage';
 import NotificationSettingsPage from '@/pages/NotificationSettingsPage';
 import PoliciesPage from '@/pages/PoliciesPage';
@@ -57,6 +58,7 @@ const AppRoutes = () => (
       <Route path="dpia" element={<DpiaPage />} />
       <Route path="policies" element={<PoliciesPage />} />
       <Route path="incidents" element={<IncidentsPage />} />
+      <Route path="notifications" element={<NotificationsPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="settings" element={<AccountSettingsPage />} />
       <Route path="settings/notifications" element={<NotificationSettingsPage />} />
