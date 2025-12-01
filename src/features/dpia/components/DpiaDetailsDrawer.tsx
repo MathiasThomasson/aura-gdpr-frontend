@@ -13,6 +13,8 @@ type Props = {
   mode: Mode;
   onClose: () => void;
   onSave: (dpia: DpiaItem) => void;
+  isLoading?: boolean;
+  isSaving?: boolean;
 };
 
 const statusOptions: DpiaStatus[] = ['draft', 'in_review', 'approved', 'rejected', 'archived'];
@@ -28,7 +30,7 @@ const computeRisk = (likelihood: number, impact: number): DpiaRiskRating => {
   };
 };
 
-const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSave }) => {
+const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSave, isLoading = false, isSaving = false }) => {
   const [draft, setDraft] = React.useState<DpiaItem | null>(dpia);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -118,6 +120,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
         </div>
 
         <div className="space-y-4 p-5">
+          {isLoading && <p className="text-sm text-slate-500">Loading DPIA details...</p>}
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="space-y-1 text-sm text-slate-700">
@@ -126,7 +129,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                   type="text"
                   value={draft.name}
                   onChange={(e) => updateField('name', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -136,7 +139,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                   type="text"
                   value={draft.systemName}
                   onChange={(e) => updateField('systemName', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -149,7 +152,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                   type="text"
                   value={draft.owner}
                   onChange={(e) => updateField('owner', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -158,7 +161,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <select
                   value={draft.status}
                   onChange={(e) => updateField('status', e.target.value as DpiaStatus)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statusOptions.map((s) => (
@@ -182,7 +185,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.purpose}
                   onChange={(e) => updateField('purpose', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[80px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -191,7 +194,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.legalBasis || ''}
                   onChange={(e) => updateField('legalBasis', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[80px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -213,7 +216,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.dataSubjects}
                   onChange={(e) => updateField('dataSubjects', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -222,7 +225,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.dataCategories}
                   onChange={(e) => updateField('dataCategories', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -234,7 +237,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.recipients || ''}
                   onChange={(e) => updateField('recipients', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -243,7 +246,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <textarea
                   value={draft.transfersOutsideEU || ''}
                   onChange={(e) => updateField('transfersOutsideEU', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -268,7 +271,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <select
                   value={draft.risk.likelihood}
                   onChange={(e) => updateRisk('likelihood', Number(e.target.value))}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {[1, 2, 3, 4, 5].map((v) => (
@@ -283,7 +286,7 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 <select
                   value={draft.risk.impact}
                   onChange={(e) => updateRisk('impact', Number(e.target.value))}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {[1, 2, 3, 4, 5].map((v) => (
@@ -313,7 +316,9 @@ const DpiaDetailsDrawer: React.FC<Props> = ({ dpia, isOpen, mode, onClose, onSav
                 Cancel
               </Button>
               {isEditable && (
-                <Button onClick={handleSave}>{mode === 'create' ? 'Create DPIA' : 'Save changes'}</Button>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? 'Saving...' : mode === 'create' ? 'Create DPIA' : 'Save changes'}
+                </Button>
               )}
             </div>
           </div>

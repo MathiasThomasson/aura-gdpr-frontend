@@ -4,20 +4,15 @@ import PolicyFiltersBar from './components/PolicyFiltersBar';
 import PolicyTable from './components/PolicyTable';
 import PolicyDetailsDrawer from './components/PolicyDetailsDrawer';
 import NewPolicyMenu from './components/NewPolicyMenu';
-import usePoliciesMockData from './hooks/usePoliciesMockData';
-import {
-  PolicyItem,
-  PolicyStatus,
-  PolicyType,
-  GeneratePolicyInput,
-} from './types';
+import { usePolicies } from './hooks/usePolicies';
+import { PolicyItem, PolicyStatus, PolicyType, GeneratePolicyInput } from './types';
 import { generatePolicyWithAi } from './api';
 
 type FilterStatus = PolicyStatus | 'all';
 type FilterType = PolicyType | 'all';
 
 const PoliciesPage: React.FC = () => {
-  const { policies, setPolicies, isLoading, isError } = usePoliciesMockData();
+  const { policies, loading, detailLoading, saving, error, refresh, create, update, fetchOne } = usePolicies();
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState<FilterStatus>('all');
   const [type, setType] = React.useState<FilterType>('all');
@@ -41,18 +36,20 @@ const PoliciesPage: React.FC = () => {
   const handleSelect = (policy: PolicyItem) => {
     setSelected(policy);
     setMode('view');
+    if (policy.id) {
+      fetchOne(policy.id).then((detail) => setSelected(detail)).catch(() => {});
+    }
   };
 
-  const handleSave = (policy: PolicyItem) => {
-    setPolicies((prev) => {
-      const exists = prev.findIndex((p) => p.id === policy.id);
-      if (exists >= 0) {
-        const next = [...prev];
-        next[exists] = policy;
-        return next;
-      }
-      return [policy, ...prev];
-    });
+  const handleSave = async (policy: PolicyItem) => {
+    if (mode === 'create') {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = policy;
+      await create(rest as Omit<PolicyItem, 'id'>);
+    } else if (policy.id) {
+      await update(policy.id, policy);
+    }
+    await refresh();
     setSelected(null);
     setMode('view');
   };
@@ -60,11 +57,11 @@ const PoliciesPage: React.FC = () => {
   const handleCreateBlank = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `policy-${Date.now()}`,
+      id: '',
       name: 'New policy',
       type: 'other',
       status: 'draft',
-      owner: 'You',
+      owner: '',
       lastUpdated: now,
       createdAt: now,
       summary: '',
@@ -144,7 +141,8 @@ const PoliciesPage: React.FC = () => {
         onTypeChange={setType}
       />
 
-      <PolicyTable policies={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      <PolicyTable policies={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <PolicyDetailsDrawer
         policy={selected}
@@ -152,6 +150,8 @@ const PoliciesPage: React.FC = () => {
         mode={mode}
         onClose={() => setSelected(null)}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
         onRegenerateAi={mode === 'create' ? handleRegenerateAi : undefined}
         aiGenerating={aiGenerating}
       />

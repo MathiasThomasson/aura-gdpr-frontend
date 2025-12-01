@@ -12,6 +12,8 @@ type Props = {
   mode: Mode;
   onClose: () => void;
   onSave: (record: RopaItem, mode: 'create' | 'edit') => void;
+  isLoading?: boolean;
+  isSaving?: boolean;
 };
 
 const categories: ProcessingCategory[] = [
@@ -23,7 +25,7 @@ const categories: ProcessingCategory[] = [
   'other',
 ];
 
-const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onSave }) => {
+const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onSave, isLoading = false, isSaving = false }) => {
   const [draft, setDraft] = React.useState<RopaItem | null>(record);
   const [errors, setErrors] = React.useState<{ name?: string; systemName?: string; purpose?: string }>({});
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -115,6 +117,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
         </div>
 
         <div className="space-y-4 p-5">
+          {isLoading && <p className="text-sm text-slate-500">Loading processing activity...</p>}
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <label className="space-y-1 text-sm text-slate-700">
@@ -123,7 +126,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                   type="text"
                   value={draft.name}
                   onChange={(e) => updateField('name', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
                 {errors.name && <p className="text-xs text-rose-600">{errors.name}</p>}
@@ -134,7 +137,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                   type="text"
                   value={draft.systemName}
                   onChange={(e) => updateField('systemName', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
                 {errors.systemName && <p className="text-xs text-rose-600">{errors.systemName}</p>}
@@ -148,7 +151,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                   type="text"
                   value={draft.owner}
                   onChange={(e) => updateField('owner', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -157,7 +160,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <select
                   value={draft.processingCategory}
                   onChange={(e) => updateField('processingCategory', e.target.value as ProcessingCategory)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {categories.map((cat) => (
@@ -173,7 +176,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                   type="text"
                   value={draft.legalBasis}
                   onChange={(e) => updateField('legalBasis', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -196,7 +199,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.dataSubjects}
                   onChange={(e) => updateField('dataSubjects', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -205,7 +208,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.dataCategories}
                   onChange={(e) => updateField('dataCategories', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[70px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -217,7 +220,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.recipients}
                   onChange={(e) => updateField('recipients', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -226,7 +229,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.transfersOutsideEU}
                   onChange={(e) => updateField('transfersOutsideEU', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -238,7 +241,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.retentionPeriod}
                   onChange={(e) => updateField('retentionPeriod', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -247,7 +250,7 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
                 <textarea
                   value={draft.securityMeasures}
                   onChange={(e) => updateField('securityMeasures', e.target.value)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="min-h-[60px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 />
               </label>
@@ -277,9 +280,11 @@ const RopaDetailsDrawer: React.FC<Props> = ({ record, isOpen, mode, onClose, onS
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              {isEditable && (
-                <Button onClick={handleSave}>{mode === 'create' ? 'Create record' : 'Save changes'}</Button>
-              )}
+            {isEditable && (
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving...' : mode === 'create' ? 'Create record' : 'Save changes'}
+              </Button>
+            )}
             </div>
           </div>
         </div>

@@ -3,13 +3,13 @@ import DpiaFiltersBar from './components/DpiaFiltersBar';
 import DpiaTable from './components/DpiaTable';
 import DpiaDetailsDrawer from './components/DpiaDetailsDrawer';
 import NewDpiaMenu from './components/NewDpiaMenu';
-import useDpiaMockData from './hooks/useDpiaMockData';
+import useDpia from './hooks/useDpia';
 import { DpiaItem, DpiaStatus } from './types';
 
 type RiskLevel = 'all' | 'low' | 'medium' | 'high';
 
 const DpiaPage: React.FC = () => {
-  const { dpias, setDpias, isLoading, isError } = useDpiaMockData();
+  const { dpias, loading, detailLoading, saving, error, refresh, create, update, fetchOne } = useDpia();
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState<DpiaStatus | 'all'>('all');
   const [risk, setRisk] = React.useState<RiskLevel>('all');
@@ -30,18 +30,20 @@ const DpiaPage: React.FC = () => {
   const handleSelect = (dpia: DpiaItem) => {
     setSelected(dpia);
     setMode('view');
+    if (dpia.id) {
+      fetchOne(dpia.id).then((detail) => setSelected(detail)).catch(() => {});
+    }
   };
 
-  const handleSave = (dpia: DpiaItem) => {
-    setDpias((prev) => {
-      const exists = prev.findIndex((d) => d.id === dpia.id);
-      if (exists >= 0) {
-        const next = [...prev];
-        next[exists] = dpia;
-        return next;
-      }
-      return [dpia, ...prev];
-    });
+  const handleSave = async (dpia: DpiaItem) => {
+    if (mode === 'create') {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = dpia;
+      await create(rest as Omit<DpiaItem, 'id'>);
+    } else if (dpia.id) {
+      await update(dpia.id, dpia);
+    }
+    await refresh();
     setSelected(null);
     setMode('view');
   };
@@ -113,7 +115,8 @@ const DpiaPage: React.FC = () => {
         onRiskChange={setRisk}
       />
 
-      <DpiaTable dpias={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      <DpiaTable dpias={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <DpiaDetailsDrawer
         dpia={selected}
@@ -121,6 +124,8 @@ const DpiaPage: React.FC = () => {
         mode={mode}
         onClose={() => setSelected(null)}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
       />
     </div>
   );

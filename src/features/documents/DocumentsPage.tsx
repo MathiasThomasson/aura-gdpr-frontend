@@ -1,7 +1,7 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
 import PageInfoBox from '@/components/PageInfoBox';
-import useDocumentsMockData from './hooks/useDocumentsMockData';
+import useDocuments from './hooks/useDocuments';
 import { DocumentItem, DocumentStatus, DocumentType } from './types';
 import DocumentFiltersBar from './components/DocumentFiltersBar';
 import DocumentTable from './components/DocumentTable';
@@ -12,7 +12,7 @@ type FilterStatus = DocumentStatus | 'all';
 type FilterType = DocumentType | 'all';
 
 const DocumentsPage: React.FC = () => {
-  const { documents, isLoading, isError, upsertDocument } = useDocumentsMockData();
+  const { documents, loading, detailLoading, saving, error, refresh, create, update, fetchOne } = useDocuments();
   const [search, setSearch] = React.useState('');
   const [status, setStatus] = React.useState<FilterStatus>('all');
   const [type, setType] = React.useState<FilterType>('all');
@@ -33,16 +33,19 @@ const DocumentsPage: React.FC = () => {
   const handleSelect = (doc: DocumentItem) => {
     setSelected(doc);
     setDrawerMode('view');
+    if (doc.id) {
+      fetchOne(doc.id).then((detail) => setSelected(detail)).catch(() => {});
+    }
   };
 
   const handleCreateBlank = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `doc-${Date.now()}`,
+      id: '',
       name: 'New document',
       type: 'other',
       status: 'draft',
-      owner: 'You',
+      owner: '',
       lastUpdated: now,
       createdAt: now,
       description: '',
@@ -54,11 +57,11 @@ const DocumentsPage: React.FC = () => {
   const handleCreateFromTemplate = (template: { name: string; type: string; description?: string }) => {
     const now = new Date().toISOString();
     setSelected({
-      id: `doc-${Date.now()}`,
+      id: '',
       name: template.name,
       type: template.type as DocumentType,
       status: 'draft',
-      owner: 'You',
+      owner: '',
       lastUpdated: now,
       createdAt: now,
       description: template.description ?? '',
@@ -67,9 +70,15 @@ const DocumentsPage: React.FC = () => {
     setDrawerMode('create');
   };
 
-  const handleSave = (doc: DocumentItem) => {
-    const now = new Date().toISOString();
-    upsertDocument({ ...doc, lastUpdated: now });
+  const handleSave = async (doc: DocumentItem) => {
+    if (drawerMode === 'create') {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = doc;
+      await create(rest as Omit<DocumentItem, 'id'>);
+    } else if (doc.id) {
+      await update(doc.id, doc);
+    }
+    await refresh();
     setSelected(null);
     setDrawerMode('view');
   };
@@ -100,7 +109,8 @@ const DocumentsPage: React.FC = () => {
         onTypeChange={setType}
       />
 
-      <DocumentTable documents={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      <DocumentTable documents={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
         <div className="flex items-start gap-2">
@@ -121,6 +131,8 @@ const DocumentsPage: React.FC = () => {
         onClose={() => setSelected(null)}
         onSave={handleSave}
         mode={drawerMode}
+        isLoading={detailLoading}
+        isSaving={saving}
       />
     </div>
   );

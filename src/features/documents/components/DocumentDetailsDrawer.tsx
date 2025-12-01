@@ -13,6 +13,8 @@ type Props = {
   onClose: () => void;
   onSave: (doc: DocumentItem) => void;
   mode: Mode;
+  isLoading?: boolean;
+  isSaving?: boolean;
 };
 
 const statusOptions: DocumentStatus[] = ['draft', 'in_review', 'approved', 'published', 'archived'];
@@ -32,7 +34,7 @@ const formatDateTime = (value?: string) => {
   return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 };
 
-const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onSave, mode }) => {
+const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onSave, mode, isLoading = false, isSaving = false }) => {
   const [draft, setDraft] = React.useState<DocumentItem | null>(document);
   const [aiHint, setAiHint] = React.useState<string | null>(null);
 
@@ -96,14 +98,15 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
         </div>
 
         <div className="space-y-4 p-5">
+          {isLoading && <p className="text-sm text-slate-500">Loading document details...</p>}
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <label className="space-y-1 text-sm text-slate-700">
               <span className="font-medium">Name</span>
               <input
                 type="text"
                 value={draft.name}
-                onChange={(e) => updateField('name', e.target.value)}
-                disabled={!isEditable}
+              onChange={(e) => updateField('name', e.target.value)}
+              disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -114,7 +117,7 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
                 <select
                   value={draft.type}
                   onChange={(e) => updateField('type', e.target.value as DocumentType)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {typeOptions.map((t) => (
@@ -130,7 +133,7 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
                 <select
                   value={draft.status}
                   onChange={(e) => updateField('status', e.target.value as DocumentStatus)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statusOptions.map((s) => (
@@ -147,8 +150,8 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
               <input
                 type="text"
                 value={draft.owner}
-                onChange={(e) => updateField('owner', e.target.value)}
-                disabled={!isEditable}
+              onChange={(e) => updateField('owner', e.target.value)}
+              disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -158,8 +161,8 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
               <input
                 type="text"
                 value={draft.tags?.join(', ') || ''}
-                onChange={(e) => updateField('tags', e.target.value.split(',').map((t) => t.trim()).filter(Boolean))}
-                disabled={!isEditable}
+              onChange={(e) => updateField('tags', e.target.value.split(',').map((t) => t.trim()).filter(Boolean))}
+              disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -169,7 +172,7 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
               <textarea
                 value={draft.description || ''}
                 onChange={(e) => updateField('description', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="min-h-[120px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 placeholder="Summary or key points for this document."
               />
@@ -208,12 +211,14 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
                 Cancel
               </Button>
               {isEditable ? (
-                <Button onClick={handleSave}>Create document</Button>
-              ) : (
-                <Button variant="outline" onClick={onClose}>
-                  Close
-                </Button>
-              )}
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Create document'}
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+            )}
             </div>
           </div>
         </div>

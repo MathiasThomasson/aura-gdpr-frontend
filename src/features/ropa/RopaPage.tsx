@@ -3,14 +3,14 @@ import RopaFiltersBar from './components/RopaFiltersBar';
 import RopaTable from './components/RopaTable';
 import RopaDetailsDrawer from './components/RopaDetailsDrawer';
 import NewRopaButton from './components/NewRopaButton';
-import useRopaMockData from './hooks/useRopaMockData';
+import useRopa from './hooks/useRopa';
 import { ProcessingCategory, RopaItem } from './types';
 
 type CategoryFilter = ProcessingCategory | 'all';
 type OwnerFilter = string | 'all';
 
 const RopaPage: React.FC = () => {
-  const { records, setRecords, isLoading, isError } = useRopaMockData();
+  const { records, loading, detailLoading, saving, error, refresh, create, update, fetchOne } = useRopa();
   const [search, setSearch] = React.useState('');
   const [category, setCategory] = React.useState<CategoryFilter>('all');
   const [owner, setOwner] = React.useState<OwnerFilter>('all');
@@ -33,20 +33,20 @@ const RopaPage: React.FC = () => {
   const handleSelect = (record: RopaItem) => {
     setSelected(record);
     setMode('view');
+    if (record.id) {
+      fetchOne(record.id).then((detail) => setSelected(detail)).catch(() => {});
+    }
   };
 
-  const handleSave = (record: RopaItem, saveMode: 'create' | 'edit') => {
-    setRecords((prev) => {
-      if (saveMode === 'edit') {
-        const idx = prev.findIndex((r) => r.id === record.id);
-        if (idx >= 0) {
-          const next = [...prev];
-          next[idx] = { ...record, lastUpdated: new Date().toISOString() };
-          return next;
-        }
-      }
-      return [record, ...prev];
-    });
+  const handleSave = async (record: RopaItem, saveMode: 'create' | 'edit') => {
+    if (saveMode === 'create') {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = record;
+      await create(rest as Omit<RopaItem, 'id'>);
+    } else if (record.id) {
+      await update(record.id, record);
+    }
+    await refresh();
     setSelected(null);
     setMode('view');
   };
@@ -54,10 +54,10 @@ const RopaPage: React.FC = () => {
   const handleNew = () => {
     const now = new Date().toISOString();
     setSelected({
-      id: `ropa-${Date.now()}`,
+      id: '',
       name: '',
       systemName: '',
-      owner: 'You',
+      owner: '',
       purpose: '',
       legalBasis: '',
       processingCategory: 'other',
@@ -93,7 +93,8 @@ const RopaPage: React.FC = () => {
         onOwnerChange={setOwner}
       />
 
-      <RopaTable records={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
+      <RopaTable records={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
       <RopaDetailsDrawer
         record={selected}
@@ -101,6 +102,8 @@ const RopaPage: React.FC = () => {
         mode={mode}
         onClose={() => setSelected(null)}
         onSave={handleSave}
+        isLoading={detailLoading}
+        isSaving={saving}
       />
     </div>
   );

@@ -22,6 +22,8 @@ type Props = {
   onSave: (policy: PolicyItem) => void;
   onRegenerateAi?: (input: GeneratePolicyInput) => Promise<void>;
   aiGenerating?: boolean;
+  isLoading?: boolean;
+  isSaving?: boolean;
 };
 
 const statusOptions: PolicyStatus[] = ['draft', 'in_review', 'approved', 'published', 'archived'];
@@ -56,6 +58,8 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
   onSave,
   onRegenerateAi,
   aiGenerating,
+  isLoading = false,
+  isSaving = false,
 }) => {
   const [draft, setDraft] = React.useState<PolicyItem | null>(policy);
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -143,6 +147,8 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
         </div>
 
         <div className="space-y-4 p-5">
+          {isLoading && <p className="text-sm text-slate-500">Loading policy...</p>}
+          {isLoading && <p className="text-sm text-slate-500">Loading policy details...</p>}
           <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <label className="space-y-1 text-sm text-slate-700">
               <span className="font-medium">Name</span>
@@ -150,7 +156,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 type="text"
                 value={draft.name}
                 onChange={(e) => updateField('name', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -161,7 +167,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 <select
                   value={draft.type}
                   onChange={(e) => updateField('type', e.target.value as PolicyType)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {typeOptions.map((t) => (
@@ -177,7 +183,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 <select
                   value={draft.status}
                   onChange={(e) => updateField('status', e.target.value as PolicyStatus)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isSaving}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statusOptions.map((s) => (
@@ -195,7 +201,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 type="text"
                 value={draft.owner}
                 onChange={(e) => updateField('owner', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -206,7 +212,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 type="text"
                 value={draft.tags?.join(', ') || ''}
                 onChange={(e) => updateField('tags', e.target.value.split(',').map((t) => t.trim()).filter(Boolean))}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
             </label>
@@ -216,7 +222,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
               <textarea
                 value={draft.summary || ''}
                 onChange={(e) => updateField('summary', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="min-h-[80px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 placeholder="Short summary of the policy."
               />
@@ -227,7 +233,7 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
               <textarea
                 value={draft.content || ''}
                 onChange={(e) => updateField('content', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isSaving}
                 className="min-h-[200px] w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 placeholder="Full policy content."
               />
@@ -276,11 +282,11 @@ const PolicyDetailsDrawer: React.FC<Props> = ({
                 {mode === 'create' ? 'Cancel' : 'Close'}
               </Button>
               {isEditable && (
-                <Button onClick={handleSave} disabled={aiGenerating}>
-                  {mode === 'create' ? 'Create policy' : 'Save changes'}
-                </Button>
-              )}
-            </div>
+              <Button onClick={handleSave} disabled={aiGenerating || isSaving}>
+                {mode === 'create' ? 'Create policy' : 'Save changes'}
+              </Button>
+            )}
+          </div>
           </div>
         </div>
       </div>
