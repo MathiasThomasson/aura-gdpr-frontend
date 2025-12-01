@@ -1,103 +1,68 @@
-import type { AuditRun } from './types';
+import api from '@/lib/apiClient';
+import type { AuditAreaKey, AuditRun } from './types';
+
+const areaFallback = (value: any): AuditAreaKey => {
+  const allowed: AuditAreaKey[] = ['dsr', 'policies', 'documents', 'dpia', 'ropa', 'incidents', 'security_measures'];
+  return allowed.includes(value) ? value : 'policies';
+};
+
+const statusFallback = (value: any): AuditRun['areas'][number]['status'] => {
+  const allowed: AuditRun['areas'][number]['status'][] = ['good', 'needs_attention', 'critical'];
+  return allowed.includes(value) ? value : 'needs_attention';
+};
+
+const recommendationSeverityFallback = (value: any): AuditRun['recommendations'][number]['severity'] => {
+  const allowed: AuditRun['recommendations'][number]['severity'][] = ['low', 'medium', 'high'];
+  return allowed.includes(value) ? value : 'medium';
+};
+
+const mapAuditRun = (item: any): AuditRun => ({
+  id: item?.id ?? item?._id ?? '',
+  createdAt: item?.createdAt ?? item?.created_at ?? '',
+  completedAt: item?.completedAt ?? item?.completed_at ?? item?.finished_at ?? '',
+  overallScore: item?.overallScore ?? item?.score ?? 0,
+  areas: Array.isArray(item?.areas)
+    ? item.areas.map((area: any) => ({
+        key: areaFallback(area?.key ?? area?.id),
+        name: area?.name ?? '',
+        score: area?.score ?? 0,
+        status: statusFallback(area?.status),
+        summary: area?.summary ?? '',
+        recommendationsCount: area?.recommendationsCount ?? area?.recommendations_count ?? 0,
+      }))
+    : [],
+  recommendations: Array.isArray(item?.recommendations)
+    ? item.recommendations.map((rec: any) => ({
+        id: rec?.id ?? rec?._id ?? '',
+        area: areaFallback(rec?.area),
+        title: rec?.title ?? '',
+        description: rec?.description ?? '',
+        severity: recommendationSeverityFallback(rec?.severity),
+        estimatedImpact: rec?.estimatedImpact ?? rec?.estimated_impact ?? undefined,
+      }))
+    : [],
+});
+
+const normalizeList = (payload: unknown): AuditRun[] => {
+  if (Array.isArray(payload)) return payload.map(mapAuditRun);
+  const value = payload as { items?: unknown; history?: unknown };
+  if (Array.isArray(value?.items)) return value.items.map(mapAuditRun);
+  if (Array.isArray(value?.history)) return value.history.map(mapAuditRun);
+  return [];
+};
 
 export async function fetchLatestAiAudit(): Promise<AuditRun | null> {
-  return {
-    id: 'audit_001',
-    createdAt: '2025-05-10T09:00:00Z',
-    completedAt: '2025-05-10T09:00:10Z',
-    overallScore: 78,
-    areas: [
-      {
-        key: 'dsr',
-        name: 'Data subject requests',
-        score: 82,
-        status: 'needs_attention',
-        summary: 'Response times are good, but you lack a formal identity verification guideline.',
-        recommendationsCount: 2,
-      },
-      {
-        key: 'policies',
-        name: 'Policies',
-        score: 74,
-        status: 'needs_attention',
-        summary: 'Several policies have not been reviewed in the last 18 months.',
-        recommendationsCount: 3,
-      },
-      {
-        key: 'documents',
-        name: 'Documents',
-        score: 80,
-        status: 'good',
-        summary: 'Most core GDPR documents exist and are up to date.',
-        recommendationsCount: 1,
-      },
-      {
-        key: 'dpia',
-        name: 'DPIA',
-        score: 65,
-        status: 'needs_attention',
-        summary: 'Some high-risk processing activities are missing DPIAs.',
-        recommendationsCount: 2,
-      },
-      {
-        key: 'ropa',
-        name: 'ROPA',
-        score: 70,
-        status: 'needs_attention',
-        summary: 'Your records of processing activities are incomplete for some systems.',
-        recommendationsCount: 2,
-      },
-      {
-        key: 'incidents',
-        name: 'Incidents',
-        score: 85,
-        status: 'good',
-        summary: 'Incident logging is in place with no unresolved incidents.',
-        recommendationsCount: 0,
-      },
-      {
-        key: 'security_measures',
-        name: 'Security measures',
-        score: 76,
-        status: 'needs_attention',
-        summary: 'Technical measures are documented, but regular reviews are missing.',
-        recommendationsCount: 2,
-      },
-    ],
-    recommendations: [
-      {
-        id: 'rec_1',
-        area: 'policies',
-        title: 'Review and update privacy and cookie policies',
-        description: 'Your last review was more than 18 months ago. Update the policies and document the review date.',
-        severity: 'medium',
-        estimatedImpact: 'Improves transparency and reduces legal risk.',
-      },
-      {
-        id: 'rec_2',
-        area: 'dpia',
-        title: 'Perform DPIA for high-risk processing activities',
-        description: 'At least two processing activities meet the criteria for mandatory DPIAs.',
-        severity: 'high',
-        estimatedImpact: 'Reduces risk of non-compliance with GDPR Article 35.',
-      },
-      {
-        id: 'rec_3',
-        area: 'dsr',
-        title: 'Introduce a documented identity verification process',
-        description:
-          'Create and document a clear process for verifying the identity of data subjects before responding to requests.',
-        severity: 'medium',
-      },
-    ],
-  };
+  const res = await api.get('/api/ai/audit/latest');
+  if (!res.data) return null;
+  return mapAuditRun(res.data);
+}
+
+export async function fetchAiAuditHistory(): Promise<AuditRun[]> {
+  const res = await api.get('/api/ai/audit/history');
+  return normalizeList(res.data);
 }
 
 export async function runAiAudit(): Promise<AuditRun> {
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-  const result = await fetchLatestAiAudit();
-  if (!result) {
-    throw new Error('No audit data available.');
-  }
-  return result;
+  const res = await api.post('/api/ai/audit/run');
+  return mapAuditRun(res.data);
 }

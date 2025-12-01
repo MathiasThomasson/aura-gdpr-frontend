@@ -3,10 +3,18 @@ import PageInfoBox from '@/components/PageInfoBox';
 import CurrentPlanCard from './components/CurrentPlanCard';
 import UsageSummary from './components/UsageSummary';
 import BillingHistoryTable from './components/BillingHistoryTable';
-import useBillingMockData from './hooks/useBillingMockData';
+import useBilling from './hooks/useBilling';
 
 const BillingPage: React.FC = () => {
-  const { currentPlan, usage, history, isLoading, isError } = useBillingMockData();
+  const { currentPlan, usage, history, isLoading, isError, openPortal } = useBilling();
+
+  const handleOpenPortal = async () => {
+    try {
+      await openPortal();
+    } catch (error) {
+      alert('Unable to open billing portal right now.');
+    }
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -21,9 +29,15 @@ const BillingPage: React.FC = () => {
       />
 
       <div className="grid gap-4 md:grid-cols-2">
-        <CurrentPlanCard plan={currentPlan} />
-        <UsageSummary usage={usage} />
+        <CurrentPlanCard plan={currentPlan} isLoading={isLoading} onManageBilling={handleOpenPortal} />
+        <UsageSummary usage={usage} isLoading={isLoading} />
       </div>
+
+      {isError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          Failed to load billing data. Please try again.
+        </div>
+      )}
 
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <h2 className="text-lg font-semibold text-slate-900">Billing history</h2>

@@ -48,8 +48,8 @@ const NotificationRow: React.FC<Props> = ({ notification }) => {
   const { markAsRead } = useNotifications();
   const navigate = useNavigate();
 
-  const handleClick = () => {
-    markAsRead(notification.id);
+  const handleClick = async () => {
+    await markAsRead(notification.id);
     if (notification.link) {
       navigate(notification.link);
     }

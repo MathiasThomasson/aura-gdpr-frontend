@@ -5,12 +5,13 @@ import { UserRole } from '../types';
 type Props = {
   open: boolean;
   onClose: () => void;
-  onInvite: (user: { name: string; email: string; role: UserRole }) => void;
+  onInvite: (user: { name: string; email: string; role: UserRole }) => Promise<void> | void;
+  isSubmitting?: boolean;
 };
 
 const roles: UserRole[] = ['owner', 'admin', 'editor', 'viewer'];
 
-const InviteUserModal: React.FC<Props> = ({ open, onClose, onInvite }) => {
+const InviteUserModal: React.FC<Props> = ({ open, onClose, onInvite, isSubmitting }) => {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [role, setRole] = React.useState<UserRole>('viewer');
@@ -35,9 +36,9 @@ const InviteUserModal: React.FC<Props> = ({ open, onClose, onInvite }) => {
     return Object.keys(next).length === 0;
   };
 
-  const handleInvite = () => {
+  const handleInvite = async () => {
     if (!validate()) return;
-    onInvite({ name: name.trim(), email: email.trim(), role });
+    await onInvite({ name: name.trim(), email: email.trim(), role });
   };
 
   return (
@@ -85,10 +86,12 @@ const InviteUserModal: React.FC<Props> = ({ open, onClose, onInvite }) => {
           </div>
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button onClick={handleInvite}>Send invite</Button>
+          <Button onClick={handleInvite} disabled={isSubmitting}>
+            {isSubmitting ? 'Sending...' : 'Send invite'}
+          </Button>
         </div>
       </div>
     </div>

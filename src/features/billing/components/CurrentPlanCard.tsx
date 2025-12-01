@@ -1,16 +1,17 @@
 import React from 'react';
 import { TenantPlan } from '../types';
 import { Button } from '@/components/ui/button';
-import { openBillingPortal } from '../portal';
 
 type Props = {
-  plan: TenantPlan;
+  plan: TenantPlan | null;
+  isLoading?: boolean;
+  onManageBilling?: () => void;
 };
 
 const formatPrice = (price: number, currency: string) =>
   new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(price);
 
-const CurrentPlanCard: React.FC<Props> = ({ plan }) => {
+const CurrentPlanCard: React.FC<Props> = ({ plan, isLoading, onManageBilling }) => {
   const handleUpgrade = () => {
     alert('Plan changes will be managed in a future update.');
   };
@@ -20,8 +21,16 @@ const CurrentPlanCard: React.FC<Props> = ({ plan }) => {
   };
 
   const handleManageBilling = () => {
-    openBillingPortal();
+    onManageBilling?.();
   };
+
+  if (isLoading || !plan) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-muted-foreground">Loading current plan...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -31,7 +40,7 @@ const CurrentPlanCard: React.FC<Props> = ({ plan }) => {
           <h2 className="text-xl font-semibold text-slate-900">{plan.name}</h2>
           <p className="text-sm text-slate-600">
             {plan.isTrial && plan.trialDaysLeft && plan.trialDaysLeft > 0
-              ? `Free trial – ${plan.trialDaysLeft} days left`
+              ? `Free trial - ${plan.trialDaysLeft} days left`
               : `${formatPrice(plan.pricePerMonth, plan.currency)} / month`}
           </p>
         </div>

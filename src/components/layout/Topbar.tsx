@@ -133,9 +133,9 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
                   <DropdownMenuItem
                     key={notification.id}
                     className="items-start gap-3 px-2 py-2"
-                    onSelect={(e) => {
+                    onSelect={async (e) => {
                       e.preventDefault();
-                      markAsRead(notification.id);
+                      await markAsRead(notification.id);
                       if (notification.link) {
                         navigate(notification.link);
                       }

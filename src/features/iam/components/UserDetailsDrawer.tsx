@@ -12,13 +12,15 @@ type Props = {
   isOpen: boolean;
   mode: Mode;
   onClose: () => void;
-  onSave: (user: IamUser, mode: 'create' | 'edit') => void;
+  onSave: (user: IamUser, mode: 'create' | 'edit') => Promise<void> | void;
+  onPatch?: (id: string, payload: Partial<IamUser> & { action?: string }) => Promise<void>;
+  isSaving?: boolean;
 };
 
 const roles: UserRole[] = ['owner', 'admin', 'editor', 'viewer'];
 const statuses: UserStatus[] = ['active', 'pending_invite', 'disabled'];
 
-const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSave }) => {
+const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSave, onPatch, isSaving }) => {
   const [draft, setDraft] = React.useState<IamUser | null>(user);
   const [errors, setErrors] = React.useState<{ name?: string; email?: string }>({});
   const panelRef = React.useRef<HTMLDivElement | null>(null);
@@ -61,6 +63,7 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
   if (!isOpen || !draft) return null;
 
   const isEditable = mode === 'create' || mode === 'edit';
+  const isBusy = Boolean(isSaving);
 
   const updateField = <K extends keyof IamUser>(key: K, value: IamUser[K]) => {
     setDraft((prev) => (prev ? { ...prev, [key]: value } : prev));
@@ -74,9 +77,9 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
     return Object.keys(next).length === 0;
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validate()) return;
-    onSave(draft, mode === 'create' ? 'create' : 'edit');
+    await onSave(draft, mode === 'create' ? 'create' : 'edit');
   };
 
   const handleOverlayClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -117,7 +120,7 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
                 type="text"
                 value={draft.name}
                 onChange={(e) => updateField('name', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isBusy}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
               {errors.name && <p className="text-xs text-rose-600">{errors.name}</p>}
@@ -128,7 +131,7 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
                 type="email"
                 value={draft.email}
                 onChange={(e) => updateField('email', e.target.value)}
-                disabled={!isEditable}
+                disabled={!isEditable || isBusy}
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
               />
               {errors.email && <p className="text-xs text-rose-600">{errors.email}</p>}
@@ -140,7 +143,7 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
                 <select
                   value={draft.role}
                   onChange={(e) => updateField('role', e.target.value as UserRole)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {roles.map((r) => (
@@ -156,7 +159,7 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
                 <select
                   value={draft.status}
                   onChange={(e) => updateField('status', e.target.value as UserStatus)}
-                  disabled={!isEditable}
+                  disabled={!isEditable || isBusy}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 disabled:opacity-70"
                 >
                   {statuses.map((s) => (
@@ -190,33 +193,72 @@ const UserDetailsDrawer: React.FC<Props> = ({ user, isOpen, mode, onClose, onSav
                 {draft.status === 'active' && (
                   <Button
                     variant="outline"
-                    onClick={() => updateField('status', 'disabled')}
+                    onClick={async () => {
+                      if (draft.id && onPatch) {
+                        await onPatch(draft.id, { status: 'disabled' });
+                        onClose();
+                      } else {
+                        updateField('status', 'disabled');
+                      }
+                    }}
+                    disabled={isBusy}
                     className="border-rose-200 text-rose-700 hover:bg-rose-50"
                   >
                     Disable user
                   </Button>
                 )}
                 {draft.status === 'disabled' && (
-                  <Button variant="outline" onClick={() => updateField('status', 'active')}>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (draft.id && onPatch) {
+                        await onPatch(draft.id, { status: 'active' });
+                        onClose();
+                      } else {
+                        updateField('status', 'active');
+                      }
+                    }}
+                    disabled={isBusy}
+                  >
                     Enable user
                   </Button>
                 )}
                 {draft.status === 'pending_invite' && (
                   <>
-                    <Button variant="outline" onClick={() => updateField('status', 'pending_invite')}>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        if (draft.id && onPatch) {
+                          await onPatch(draft.id, { action: 'resend_invite' });
+                          onClose();
+                        }
+                      }}
+                      disabled={isBusy}
+                    >
                       Resend invite
                     </Button>
-                    <Button variant="outline" onClick={() => updateField('status', 'disabled')}>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        if (draft.id && onPatch) {
+                          await onPatch(draft.id, { status: 'disabled' });
+                          onClose();
+                        }
+                      }}
+                      disabled={isBusy}
+                    >
                       Cancel invite
                     </Button>
                   </>
                 )}
               </>
             )}
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isBusy}>
               Cancel
             </Button>
-            <Button onClick={handleSave}>{mode === 'create' ? 'Create user' : 'Save changes'}</Button>
+            <Button onClick={handleSave} disabled={isBusy}>
+              {isSaving ? 'Saving...' : mode === 'create' ? 'Create user' : 'Save changes'}
+            </Button>
           </div>
         </div>
       </div>

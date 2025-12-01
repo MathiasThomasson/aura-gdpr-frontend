@@ -4,7 +4,7 @@ import NotificationsList from './components/NotificationsList';
 import useNotifications from './hooks/useNotifications';
 
 const NotificationsPage: React.FC = () => {
-  const { notifications, markAllAsRead } = useNotifications();
+  const { notifications, markAllAsRead, isLoading, isError } = useNotifications();
 
   return (
     <div className="space-y-6 p-6">
@@ -19,7 +19,9 @@ const NotificationsPage: React.FC = () => {
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <NotificationsList notifications={notifications} />
+        {isLoading && <p className="text-sm text-muted-foreground">Loading notifications...</p>}
+        {isError && <p className="text-sm text-red-600">Failed to load notifications.</p>}
+        {!isLoading && !isError && <NotificationsList notifications={notifications} />}
       </div>
     </div>
   );

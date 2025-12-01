@@ -1,12 +1,12 @@
 import React from 'react';
-import useNotificationsMockData from './hooks/useNotificationsMockData';
 import { NotificationItem } from './types';
+import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from './api';
 
 type NotificationsContextValue = {
   notifications: NotificationItem[];
   unreadCount: number;
-  markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
+  markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   isLoading: boolean;
   isError: boolean;
 };
@@ -14,18 +14,47 @@ type NotificationsContextValue = {
 export const NotificationsContext = React.createContext<NotificationsContextValue | undefined>(undefined);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { notifications, setNotifications, isLoading, isError } = useNotificationsMockData();
+  const [notifications, setNotifications] = React.useState<NotificationItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isError, setIsError] = React.useState<boolean>(false);
+
+  const load = React.useCallback(async () => {
+    setIsLoading(true);
+    setIsError(false);
+    try {
+      const data = await getNotifications();
+      setNotifications(data);
+    } catch (error) {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    load();
+  }, [load]);
 
   const markAsRead = React.useCallback(
-    (id: string) => {
+    async (id: string) => {
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      try {
+        await markNotificationAsRead(id);
+      } catch (error) {
+        setIsError(true);
+      }
     },
-    [setNotifications]
+    []
   );
 
-  const markAllAsRead = React.useCallback(() => {
+  const markAllAsRead = React.useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }, [setNotifications]);
+    try {
+      await markAllNotificationsAsRead();
+    } catch (error) {
+      setIsError(true);
+    }
+  }, []);
 
   const value = React.useMemo<NotificationsContextValue>(
     () => ({

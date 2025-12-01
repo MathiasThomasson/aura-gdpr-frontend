@@ -4,10 +4,11 @@ import AuditAreaCard from './components/AuditAreaCard';
 import RecommendationsList from './components/RecommendationsList';
 import AuditHistoryTable from './components/AuditHistoryTable';
 import RunAuditButton from './components/RunAuditButton';
-import useAiAuditMockData from './hooks/useAiAuditMockData';
+import useAiAudit from './hooks/useAiAudit';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AiAuditPage: React.FC = () => {
-  const { latestRun, history, isRunning, runAudit } = useAiAuditMockData();
+  const { latestRun, history, isRunning, isLoading, isError, runAudit } = useAiAudit();
 
   return (
     <div className="space-y-6 p-6">
@@ -21,7 +22,25 @@ const AiAuditPage: React.FC = () => {
         <RunAuditButton onRun={runAudit} isRunning={isRunning} />
       </div>
 
-      {!latestRun ? (
+      {isLoading && (
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-72" />
+          <div className="grid gap-3 md:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <Skeleton key={idx} className="h-24 w-full rounded-xl" />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isError && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+          Failed to load AI audit data. Please try again.
+        </div>
+      )}
+
+      {!isLoading && !latestRun ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-600">
           <p className="font-semibold text-slate-800">No audit run yet</p>
           <p className="text-sm text-slate-600">Run your first AI audit to see compliance insights.</p>

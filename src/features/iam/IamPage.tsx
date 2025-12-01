@@ -3,7 +3,7 @@ import UsersTable from './components/UsersTable';
 import IamFiltersBar from './components/IamFiltersBar';
 import UserDetailsDrawer from './components/UserDetailsDrawer';
 import InviteUserModal from './components/InviteUserModal';
-import useIamMockData from './hooks/useIamMockData';
+import useIam from './hooks/useIam';
 import { IamUser, UserRole, UserStatus, ROLE_PERMISSIONS } from './types';
 import { Button } from '@/components/ui/button';
 
@@ -11,7 +11,7 @@ type RoleFilter = UserRole | 'all';
 type StatusFilter = UserStatus | 'all';
 
 const IamPage: React.FC = () => {
-  const { users, setUsers, isLoading, isError } = useIamMockData();
+  const { users, isLoading, isError, invite, update, patch, refresh, fetchUser, isSaving } = useIam();
   const [search, setSearch] = React.useState('');
   const [role, setRole] = React.useState<RoleFilter>('all');
   const [status, setStatus] = React.useState<StatusFilter>('all');
@@ -31,42 +31,26 @@ const IamPage: React.FC = () => {
 
   const handleSelect = (user: IamUser) => {
     setSelected(user);
-    setMode('view');
+    setMode('edit');
+    if (user.id) {
+      fetchUser(user.id)
+        .then((detail) => setSelected(detail))
+        .catch(() => {});
+    }
   };
 
-  const handleSave = (user: IamUser, saveMode: 'create' | 'edit') => {
-    const now = new Date().toISOString();
-    setUsers((prev) => {
-      if (saveMode === 'edit') {
-        return prev.map((u) => (u.id === user.id ? { ...user, updatedAt: now } : u));
-      }
-      return [
-        {
-          ...user,
-          id: user.id || `user-${Date.now()}`,
-          createdAt: now,
-          lastLogin: undefined,
-        },
-        ...prev,
-      ];
-    });
+  const handleSave = async (user: IamUser, saveMode: 'create' | 'edit') => {
+    if (saveMode === 'edit' && user.id) {
+      await update(user.id, user);
+    }
+    await refresh();
     setSelected(null);
     setMode('view');
   };
 
-  const handleInvite = (payload: { name: string; email: string; role: UserRole }) => {
-    const now = new Date().toISOString();
-    setUsers((prev) => [
-      {
-        id: `user-${Date.now()}`,
-        name: payload.name,
-        email: payload.email,
-        role: payload.role,
-        status: 'pending_invite',
-        createdAt: now,
-      },
-      ...prev,
-    ]);
+  const handleInvite = async (payload: { name: string; email: string; role: UserRole }) => {
+    await invite(payload);
+    await refresh();
     setInviteOpen(false);
   };
 
@@ -93,6 +77,12 @@ const IamPage: React.FC = () => {
         onStatusChange={setStatus}
       />
 
+      {isError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+          Failed to load users. Please try again.
+        </div>
+      )}
+
       <UsersTable users={filtered} onSelect={handleSelect} isLoading={isLoading} isError={isError} />
 
       <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -118,9 +108,19 @@ const IamPage: React.FC = () => {
         mode={mode}
         onClose={() => setSelected(null)}
         onSave={handleSave}
+        onPatch={async (id, payload) => {
+          await patch(id, payload);
+          await refresh();
+        }}
+        isSaving={isSaving}
       />
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={handleInvite} />
+      <InviteUserModal
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        onInvite={handleInvite}
+        isSubmitting={isSaving}
+      />
     </div>
   );
 };

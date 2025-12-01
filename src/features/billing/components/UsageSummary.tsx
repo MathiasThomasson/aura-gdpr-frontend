@@ -2,10 +2,19 @@ import React from 'react';
 import { UsageSummaryData } from '../types';
 
 type Props = {
-  usage: UsageSummaryData;
+  usage: UsageSummaryData | null;
+  isLoading?: boolean;
 };
 
-const UsageSummary: React.FC<Props> = ({ usage }) => {
+const UsageSummary: React.FC<Props> = ({ usage, isLoading }) => {
+  if (isLoading || !usage) {
+    return (
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <p className="text-sm text-muted-foreground">Loading usage data...</p>
+      </div>
+    );
+  }
+
   const percent = (value: number, max?: number) => {
     if (!max || max === 0) return 0;
     return Math.min(100, Math.round((value / max) * 100));
