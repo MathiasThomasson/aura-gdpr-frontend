@@ -49,6 +49,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(true);
   }, []);
 
+  const fetchCurrentUser = useCallback(async (): Promise<User | null> => {
+    try {
+      const res = await api.get<User>('/auth/me');
+      if (res.data) {
+        setUser(res.data);
+        setUserState(res.data);
+        return res.data;
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  }, []);
+
   const handleLogout = useCallback(() => {
     clearTokens();
     clearUser();
@@ -72,6 +86,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { tokens, user: refreshedUser } = mapAuthResponse(response);
       persistSession(tokens, refreshedUser ?? existingUser ?? undefined);
       setSession(tokens, refreshedUser ?? existingUser ?? undefined);
+      if (!refreshedUser) {
+        await fetchCurrentUser();
+      }
     } catch (err: any) {
       handleLogout();
       toast({
@@ -80,32 +97,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: 'Please sign in again.',
       });
     }
-  }, [handleLogout, setSession, toast]);
+  }, [fetchCurrentUser, handleLogout, setSession, toast]);
 
   useEffect(() => {
     const bootstrap = async () => {
       const storedAccess = getAccessToken();
+      const storedRefresh = getRefreshToken();
       const storedUser = getUser();
-      if (storedAccess && storedUser) {
+      if (storedAccess && storedRefresh) {
         setAccessToken(storedAccess);
-        setUserState(storedUser);
+        if (storedUser) setUserState(storedUser);
         setIsAuthenticated(true);
+        await refreshSession();
+        if (!storedUser) {
+          await fetchCurrentUser();
+        }
       }
-      await refreshSession();
     };
     bootstrap();
-  }, [refreshSession]);
+  }, [fetchCurrentUser, refreshSession]);
 
   const login = useCallback(
     async (email: string, password: string) => {
       const res = await api.post<AuthResponse>('/auth/login', { email, password });
       const { tokens, user: nextUser } = mapAuthResponse(res.data);
       setSession(tokens, nextUser);
+      const resolvedUser = nextUser ?? (await fetchCurrentUser());
+      if (!resolvedUser) {
+        throw new Error('Unable to load user profile.');
+      }
       toast({ title: 'Login Successful', description: 'Welcome back!' });
       navigate('/app/dashboard', { replace: true });
-      return nextUser;
+      return resolvedUser;
     },
-    [navigate, setSession, toast]
+    [fetchCurrentUser, navigate, setSession, toast]
   );
 
   const register = useCallback(
@@ -113,11 +138,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await api.post<AuthResponse>('/auth/register', { email, password });
       const { tokens, user: nextUser } = mapAuthResponse(res.data);
       setSession(tokens, nextUser);
+      const resolvedUser = nextUser ?? (await fetchCurrentUser());
+      if (!resolvedUser) {
+        throw new Error('Unable to load user profile.');
+      }
       toast({ title: 'Registration Successful', description: 'Your account has been created.' });
       navigate('/app/dashboard', { replace: true });
-      return nextUser;
+      return resolvedUser;
     },
-    [navigate, setSession, toast]
+    [fetchCurrentUser, navigate, setSession, toast]
   );
 
   const logout = useCallback(() => {

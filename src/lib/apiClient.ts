@@ -5,8 +5,21 @@ import { apiBaseUrl } from './apiConfig';
 
 export type HealthResponse = { status: string; [key: string]: unknown };
 
+const normalizePath = (url?: string): string | undefined => {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url; // absolute URL, leave untouched
+  let next = url;
+  if (/^\/api(\/|$)/.test(next)) {
+    next = next.replace(/^\/api/, '');
+  }
+  if (!next.startsWith('/')) {
+    next = `/${next}`;
+  }
+  return next;
+};
+
 const api: AxiosInstance = axios.create({
-  baseURL: apiBaseUrl,
+  baseURL: apiBaseUrl.replace(/\/+$/, ''),
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,6 +29,9 @@ const api: AxiosInstance = axios.create({
 // Attach access token to every request
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
+  if (config.url) {
+    config.url = normalizePath(config.url);
+  }
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }

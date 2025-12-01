@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Download } from 'lucide-react';
+import { RefreshCcw, Download, AlertCircle } from 'lucide-react';
 import { useDashboardMockData } from '@/features/dashboard/hooks/useDashboardMockData';
 import KpiGrid from '@/features/dashboard/components/KpiGrid';
 import DeadlinesPanel from '@/features/dashboard/components/DeadlinesPanel';
@@ -8,9 +8,37 @@ import AiInsightsPanel from '@/features/dashboard/components/AiInsightsPanel';
 import RecentActivityPanel from '@/features/dashboard/components/RecentActivityPanel';
 import RiskOverviewPanel from '@/features/dashboard/components/RiskOverviewPanel';
 import GettingStartedChecklist from '@/features/dashboard/components/GettingStartedChecklist';
+import { useSystemStatus } from '@/contexts/SystemContext';
+import useDashboardSummary from '@/hooks/useDashboardSummary';
+import { DashboardSummary, RiskOverview } from '@/features/dashboard/types';
+
+const emptySummary: DashboardSummary = {
+  complianceScore: 0,
+  openDsrs: 0,
+  policiesExpiringSoon: 0,
+  ongoingDpiaCount: 0,
+  activeIncidents: 0,
+  overallRiskLevel: 'medium',
+};
 
 const DashboardPage: React.FC = () => {
-  const { summary, deadlines, activities, aiInsights, riskOverview } = useDashboardMockData();
+  const { demoMode } = useSystemStatus();
+  const mockData = useDashboardMockData();
+  const { data: summaryData, loading, error, reload } = useDashboardSummary();
+
+  const usingDemoData = demoMode;
+  const summary: DashboardSummary = usingDemoData ? mockData.summary : summaryData ?? emptySummary;
+  const riskOverview: RiskOverview = usingDemoData
+    ? mockData.riskOverview
+    : {
+        overallRiskLevel: summary.overallRiskLevel,
+        highRiskSystems: [],
+        openIncidents: summary.activeIncidents,
+        dpiaRequiredCount: summary.ongoingDpiaCount,
+      };
+  const deadlines = usingDemoData ? mockData.deadlines : [];
+  const activities = usingDemoData ? mockData.activities : [];
+  const aiInsights = usingDemoData ? mockData.aiInsights : [];
 
   return (
     <div className="space-y-6">
@@ -22,7 +50,7 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={reload} disabled={loading || usingDemoData}>
             <RefreshCcw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
@@ -32,6 +60,20 @@ const DashboardPage: React.FC = () => {
           </Button>
         </div>
       </div>
+
+      {usingDemoData && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+          <AlertCircle className="h-4 w-4" />
+          Demo mode is active. Showing sample dashboard data.
+        </div>
+      )}
+
+      {!usingDemoData && error && (
+        <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <AlertCircle className="h-4 w-4" />
+          {error}
+        </div>
+      )}
 
       <section aria-label="Key metrics and onboarding">
         <div className="grid gap-4 lg:grid-cols-3">
