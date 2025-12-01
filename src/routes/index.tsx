@@ -27,6 +27,7 @@ import TomsPage from '@/pages/TomsPage';
 import CookiesPage from '@/pages/CookiesPage';
 import IamPage from '@/pages/IamPage';
 import NotFoundPage from '@/pages/NotFoundPage';
+import SecurityHealthPage from '@/pages/SecurityHealthPage';
 import { useAuth } from '@/contexts/AuthContext';
 import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
 
@@ -67,6 +68,7 @@ const AppRoutes = () => (
       <Route path="policies" element={<PoliciesPage />} />
       <Route path="incidents" element={<IncidentsPage />} />
       <Route path="toms" element={<TomsPage />} />
+      <Route path="security-health" element={<SecurityHealthPage />} />
       <Route path="notifications" element={<NotificationsPage />} />
       <Route path="billing" element={<BillingPage />} />
       <Route path="iam" element={<IamPage />} />

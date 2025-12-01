@@ -13,6 +13,7 @@ import {
   FileSignature,
   FileText,
   Shield,
+  ShieldAlert,
   Gauge,
   Inbox,
   Sparkles,
@@ -82,6 +83,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Billing', path: '/app/billing', icon: CreditCard },
       { label: 'Settings', path: '/app/settings', icon: SettingsIcon },
       { label: 'IAM', path: '/app/iam', icon: ShieldCheck },
+      { label: 'Security health', path: '/app/security-health', icon: ShieldAlert },
     ],
   },
 ];
