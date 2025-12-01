@@ -39,22 +39,22 @@ const normalizeHistory = (payload: unknown): BillingHistoryItem[] => {
 };
 
 export async function getCurrentPlan(): Promise<TenantPlan> {
-  const res = await api.get('/api/billing/plan');
+  const res = await api.get('/billing/plan');
   return mapPlan(res.data);
 }
 
 export async function getUsage(): Promise<UsageSummaryData> {
-  const res = await api.get('/api/billing/usage');
+  const res = await api.get('/billing/usage');
   return mapUsage(res.data);
 }
 
 export async function getBillingHistory(): Promise<BillingHistoryItem[]> {
-  const res = await api.get('/api/billing/invoices');
+  const res = await api.get('/billing/invoices');
   return normalizeHistory(res.data);
 }
 
 export async function openBillingPortal(): Promise<void> {
-  const res = await api.post('/api/billing/portal');
+  const res = await api.post('/billing/portal');
   const url: string | undefined = res?.data?.url;
   if (url) {
     window.open(url, '_blank');

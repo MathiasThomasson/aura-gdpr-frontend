@@ -8,18 +8,14 @@ export type HealthResponse = { status: string; [key: string]: unknown };
 const normalizePath = (url?: string): string | undefined => {
   if (!url) return url;
   if (/^https?:\/\//i.test(url)) return url; // absolute URL, leave untouched
-  let next = url;
-  if (/^\/api(\/|$)/.test(next)) {
-    next = next.replace(/^\/api/, '');
+  if (!url.startsWith('/')) {
+    return `/${url}`;
   }
-  if (!next.startsWith('/')) {
-    next = `/${next}`;
-  }
-  return next;
+  return url;
 };
 
 const api: AxiosInstance = axios.create({
-  baseURL: apiBaseUrl.replace(/\/+$/, ''),
+  baseURL: apiBaseUrl,
   headers: {
     'Content-Type': 'application/json',
   },

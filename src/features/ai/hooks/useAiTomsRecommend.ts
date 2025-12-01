@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { recommendToms, type TomsRecommendParams, type TomsRecommendation } from '../api/toms';
+import { recommendToms, type TomsRecommendParams, type TomsRecommendation } from '../toms';
 
 export function useAiTomsRecommend() {
   const [result, setResult] = useState<TomsRecommendation | null>(null);

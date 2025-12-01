@@ -36,7 +36,7 @@ const normalizeSeverity = (value: unknown): IncidentClassification['severity'] =
 
 export async function classifyIncident(payload: IncidentClassificationRequest): Promise<IncidentClassification> {
   try {
-    const res = await api.post('/api/ai/incidents/classify', payload);
+    const res = await api.post('/ai/incidents/classify', payload);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       severity: normalizeSeverity(data.severity ?? data.predictedSeverity),

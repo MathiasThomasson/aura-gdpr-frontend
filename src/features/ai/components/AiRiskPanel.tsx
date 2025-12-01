@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import AiLoader from './AiLoader';
 import AiError from './AiError';
 import { useAiRiskEngine } from '../hooks/useAiRiskEngine';
-import type { RiskEvaluationParams } from '../api/risk';
+import type { RiskEvaluationParams } from '../risk';
 
 const badgeMap: Record<string, string> = {
   low: 'bg-emerald-100 text-emerald-700 border-emerald-200',

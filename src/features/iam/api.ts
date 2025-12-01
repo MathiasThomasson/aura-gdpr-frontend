@@ -31,22 +31,22 @@ const normalizeList = (payload: unknown): IamUser[] => {
 };
 
 export async function getUsers(): Promise<IamUser[]> {
-  const res = await api.get('/api/iam/users');
+  const res = await api.get('/iam/users');
   return normalizeList(res.data);
 }
 
 export async function getUser(id: string): Promise<IamUser> {
-  const res = await api.get(`/api/iam/users/${id}`);
+  const res = await api.get(`/iam/users/${id}`);
   return mapUser(res.data);
 }
 
 export async function inviteUser(payload: { name: string; email: string; role: UserRole }): Promise<IamUser> {
-  const res = await api.post('/api/iam/users/invite', payload);
+  const res = await api.post('/iam/users/invite', payload);
   return mapUser(res.data);
 }
 
 export async function updateUser(id: string, payload: Partial<IamUser>): Promise<IamUser> {
-  const res = await api.put(`/api/iam/users/${id}`, payload);
+  const res = await api.put(`/iam/users/${id}`, payload);
   return mapUser(res.data);
 }
 
@@ -54,6 +54,6 @@ export async function patchUser(
   id: string,
   payload: Partial<IamUser> & { action?: string }
 ): Promise<IamUser> {
-  const res = await api.patch(`/api/iam/users/${id}`, payload);
+  const res = await api.patch(`/iam/users/${id}`, payload);
   return mapUser(res.data);
 }

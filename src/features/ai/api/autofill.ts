@@ -25,7 +25,7 @@ const normalizeValues = (value: unknown): Record<string, string> => {
 
 export async function autofillDocument(params: AutofillParams): Promise<AutofillResult> {
   try {
-    const res = await api.post('/api/ai/autofill', params);
+    const res = await api.post('/ai/autofill', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       values: normalizeValues(data.values ?? data.fields ?? data),

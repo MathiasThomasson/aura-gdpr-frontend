@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { API_URL } from '@/config/api';
 import { clearTokens, clearUser, setTokens, setUser, getUser, StoredUser } from './tokenStorage';
-import { apiBaseUrl } from './apiConfig';
 
 export type User = StoredUser;
 
@@ -41,7 +41,7 @@ export const mapAuthResponse = (payload: AuthResponse): { tokens: AuthTokens; us
 
 export const refreshAuthTokens = async (refreshToken: string): Promise<AuthResponse> => {
   const res = await axios.post<AuthResponse>(
-    `${apiBaseUrl}/auth/refresh`,
+    `${API_URL}/auth/refresh`,
     { refresh_token: refreshToken },
     { headers: { 'Content-Type': 'application/json' }, timeout: 10000 }
   );

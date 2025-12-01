@@ -20,7 +20,7 @@ const toArray = (value: unknown): string[] => {
 
 export async function recommendToms(params: TomsRecommendParams): Promise<TomsRecommendation> {
   try {
-    const res = await api.post('/api/ai/toms/recommend', params);
+    const res = await api.post('/ai/toms/recommend', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       recommendedMeasures: toArray(data.recommendedMeasures ?? data.measures ?? data.recommendations),

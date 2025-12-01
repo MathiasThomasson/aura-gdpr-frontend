@@ -23,7 +23,7 @@ const pick = (value: unknown, fallback = ''): string => (typeof value === 'strin
 
 export async function generateDpia(params: GenerateDpiaParams): Promise<GeneratedDpia> {
   try {
-    const res = await api.post('/api/ai/dpia/generate', params);
+    const res = await api.post('/ai/dpia/generate', params);
     const payload = (res.data ?? {}) as Record<string, unknown>;
     return {
       purpose: pick(payload.purpose ?? payload.goal ?? ''),

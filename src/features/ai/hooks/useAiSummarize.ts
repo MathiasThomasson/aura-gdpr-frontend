@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { summarizeText, type SummarizeParams, type SummarizeResult } from '../api/summarize';
+import { summarizeText, type SummarizeParams, type SummarizeResult } from '../summarize';
 
 export function useAiSummarize() {
   const [result, setResult] = useState<SummarizeResult | null>(null);

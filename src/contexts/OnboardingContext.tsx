@@ -27,7 +27,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (!isAuthenticated) return;
     setLoading(true);
     try {
-      const response = await api.get<OnboardingState>('/api/onboarding/state');
+      const response = await api.get<OnboardingState>('/onboarding/state');
       const nextState = response.data ?? defaultState;
       setState({
         completed: Boolean(nextState.completed),
@@ -41,7 +41,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, [isAuthenticated]);
 
   const completeOnboarding = useCallback(async () => {
-    await api.patch('/api/onboarding/state', { completed: true });
+    await api.patch('/onboarding/state', { completed: true });
     setState((prev) => ({ ...prev, completed: true }));
   }, []);
 

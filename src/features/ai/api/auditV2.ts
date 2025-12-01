@@ -49,7 +49,7 @@ const toArray = (value: unknown): string[] => {
 
 export async function runAiAuditV2(): Promise<AuditV2Result> {
   try {
-    const res = await api.post('/api/ai/audit/run-v2');
+    const res = await api.post('/ai/audit/run-v2');
     const data = (res.data ?? {}) as Record<string, unknown>;
     const areasRaw = Array.isArray(data.areas) ? data.areas : Array.isArray((data as { area_results?: unknown }).area_results) ? (data as { area_results: unknown[] }).area_results : [];
     return {

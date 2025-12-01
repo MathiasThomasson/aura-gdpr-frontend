@@ -52,17 +52,17 @@ const normalizeList = (payload: unknown): AuditRun[] => {
 };
 
 export async function fetchLatestAiAudit(): Promise<AuditRun | null> {
-  const res = await api.get('/api/ai/audit/latest');
+  const res = await api.get('/ai/audit/latest');
   if (!res.data) return null;
   return mapAuditRun(res.data);
 }
 
 export async function fetchAiAuditHistory(): Promise<AuditRun[]> {
-  const res = await api.get('/api/ai/audit/history');
+  const res = await api.get('/ai/audit/history');
   return normalizeList(res.data);
 }
 
 export async function runAiAudit(): Promise<AuditRun> {
-  const res = await api.post('/api/ai/audit/run');
+  const res = await api.post('/ai/audit/run');
   return mapAuditRun(res.data);
 }

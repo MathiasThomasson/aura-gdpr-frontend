@@ -43,7 +43,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get<Partial<UserProgressState>>('/api/user-progress');
+      const response = await api.get<Partial<UserProgressState>>('/user-progress');
       setProgress((prev) => ({
         ...prev,
         ...(response.data ?? {}),
@@ -59,7 +59,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const markComplete = useCallback(async (key: keyof UserProgressState) => {
     setProgress((prev) => ({ ...prev, [key]: true }));
     try {
-      await api.patch('/api/user-progress', { [key]: true });
+      await api.patch('/user-progress', { [key]: true });
     } catch (err: unknown) {
       setProgress((prev) => ({ ...prev, [key]: false }));
       throw err;

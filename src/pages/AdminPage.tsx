@@ -2,10 +2,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Users, ShieldAlert, FileText, Filter, Search } from 'lucide-react';
+import { Users, ShieldAlert, FileText, Filter, Search, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
+import { useSystemStatus } from '@/contexts/SystemContext';
+import { getUsers as fetchIamUsers } from '@/features/iam/api';
 
 type AdminUser = {
   id: string;
@@ -28,12 +30,48 @@ type UserContext = { user?: { role?: string } };
 
 const AdminPage: React.FC = () => {
   const { user } = useAuth() as UserContext;
+  const { demoMode } = useSystemStatus();
   const [searchTerm, setSearchTerm] = React.useState('');
-  const [users] = React.useState<AdminUser[]>(mockUsers);
+  const [users, setUsers] = React.useState<AdminUser[]>(mockUsers);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
   if (user?.role !== 'Admin') {
     return <Navigate to="/app/dashboard" replace />;
   }
+
+  React.useEffect(() => {
+    if (demoMode) {
+      setUsers(mockUsers);
+      setError(null);
+      return;
+    }
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const iamUsers = await fetchIamUsers();
+        const mapped = iamUsers.map((u, idx) => ({
+          id: u.id || `u-${idx}`,
+          name: u.name || u.email || 'User',
+          email: u.email || 'N/A',
+          plan: 'Pro',
+          status: u.status === 'disabled' ? 'Inactive' : 'Active',
+          docCount: 0,
+          joinDate: u.createdAt || 'N/A',
+        }));
+        setUsers(mapped);
+      } catch (err: any) {
+        setError(err?.message ?? 'Failed to load users.');
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, [demoMode]);
 
   const filteredUsers = users.filter(
     (u) => u.name.toLowerCase().includes(searchTerm.toLowerCase()) || u.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -113,6 +151,13 @@ const AdminPage: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
+              {!demoMode && loading && <p className="p-2 text-sm text-muted-foreground">Loading users...</p>}
+              {!demoMode && error && (
+                <div className="mb-3 flex items-center gap-2 rounded-md border border-rose-200 bg-rose-50 p-2 text-sm text-rose-700">
+                  <AlertCircle className="h-4 w-4" />
+                  {error}
+                </div>
+              )}
               <table className="w-full text-sm">
                 <thead className="text-left text-muted-foreground">
                   <tr>

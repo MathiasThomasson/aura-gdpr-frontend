@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { suggestRopaFields, type RopaSuggestion, type RopaSuggestParams } from '../api/ropa';
+import { suggestRopaFields, type RopaSuggestion, type RopaSuggestParams } from '../ropa';
 
 export function useAiRopaSuggest() {
   const [result, setResult] = useState<RopaSuggestion | null>(null);

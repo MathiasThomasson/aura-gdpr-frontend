@@ -19,7 +19,7 @@ const pick = (value: unknown): string => (typeof value === 'string' ? value : ''
 
 export async function suggestRopaFields(params: RopaSuggestParams): Promise<RopaSuggestion> {
   try {
-    const res = await api.post('/api/ai/ropa/suggest', params);
+    const res = await api.post('/ai/ropa/suggest', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       legalBasis: pick(data.legal_basis ?? data.legalBasis),

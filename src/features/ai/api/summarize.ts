@@ -14,7 +14,7 @@ export type SummarizeResult = {
 
 export async function summarizeText(params: SummarizeParams): Promise<SummarizeResult> {
   try {
-    const res = await api.post('/api/ai/summarize', params);
+    const res = await api.post('/ai/summarize', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       summary: typeof data.summary === 'string' ? data.summary : typeof data.answer === 'string' ? data.answer : '',

@@ -18,7 +18,7 @@ const mapString = (value: unknown, fallback = ''): string => (typeof value === '
 
 export async function generatePolicy(params: GeneratePolicyParams): Promise<GeneratedPolicy> {
   try {
-    const res = await api.post('/api/ai/policies/generate', params);
+    const res = await api.post('/ai/policies/generate', params);
     const payload = (res.data ?? {}) as Record<string, unknown>;
     return {
       title: mapString(payload.title ?? payload.name ?? ''),

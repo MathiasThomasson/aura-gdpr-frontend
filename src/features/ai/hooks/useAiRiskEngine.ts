@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { evaluateRisk, type RiskEvaluation, type RiskEvaluationParams } from '../api/risk';
+import { evaluateRisk, type RiskEvaluation, type RiskEvaluationParams } from '../risk';
 
 export function useAiRiskEngine() {
   const [result, setResult] = useState<RiskEvaluation | null>(null);

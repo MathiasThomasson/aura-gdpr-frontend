@@ -38,14 +38,14 @@ const normalizeList = (payload: unknown): NotificationItem[] => {
 };
 
 export async function getNotifications(): Promise<NotificationItem[]> {
-  const res = await api.get('/api/notifications');
+  const res = await api.get('/notifications');
   return normalizeList(res.data);
 }
 
 export async function markNotificationAsRead(id: string): Promise<void> {
-  await api.patch(`/api/notifications/${id}/read`);
+  await api.patch(`/notifications/${id}/read`);
 }
 
 export async function markAllNotificationsAsRead(): Promise<void> {
-  await api.post('/api/notifications/mark-all-read');
+  await api.post('/notifications/mark-all-read');
 }

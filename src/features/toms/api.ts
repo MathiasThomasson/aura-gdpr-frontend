@@ -48,26 +48,26 @@ const normalizeList = (payload: unknown): TomItem[] => {
 };
 
 export async function getAll(): Promise<TomItem[]> {
-  const res = await api.get('/api/toms');
+  const res = await api.get('/toms');
   return normalizeList(res.data);
 }
 
 export async function getOne(id: string): Promise<TomItem> {
-  const res = await api.get(`/api/toms/${id}`);
+  const res = await api.get(`/toms/${id}`);
   return mapTom(res.data);
 }
 
 export async function create(payload: Partial<TomItem>): Promise<TomItem> {
-  const res = await api.post('/api/toms', payload);
+  const res = await api.post('/toms', payload);
   return mapTom(res.data);
 }
 
 export async function update(id: string, payload: Partial<TomItem>): Promise<TomItem> {
-  const res = await api.put(`/api/toms/${id}`, payload);
+  const res = await api.put(`/toms/${id}`, payload);
   return mapTom(res.data);
 }
 
 export async function patch(id: string, payload: Partial<TomItem>): Promise<TomItem> {
-  const res = await api.patch(`/api/toms/${id}`, payload);
+  const res = await api.patch(`/toms/${id}`, payload);
   return mapTom(res.data);
 }

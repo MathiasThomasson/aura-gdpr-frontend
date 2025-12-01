@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { generatePolicy, type GeneratePolicyParams, type GeneratedPolicy } from '../api/policies';
+import { generatePolicy, type GeneratePolicyParams, type GeneratedPolicy } from '../policies';
 
 export function useAiPolicyGenerator() {
   const [result, setResult] = useState<GeneratedPolicy | null>(null);

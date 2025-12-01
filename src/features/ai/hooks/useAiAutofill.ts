@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { autofillDocument, type AutofillParams, type AutofillResult } from '../api/autofill';
+import { autofillDocument, type AutofillParams, type AutofillResult } from '../autofill';
 
 export function useAiAutofill() {
   const [result, setResult] = useState<AutofillResult | null>(null);

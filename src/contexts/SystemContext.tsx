@@ -31,14 +31,15 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const searchParams = new URLSearchParams(location.search);
     const hasDemoParam = searchParams.get('demo') === '1';
     const pathIndicatesDemo = location.pathname.startsWith('/demo');
-    return hasDemoParam || pathIndicatesDemo;
+    const envDemo = import.meta.env.VITE_DEMO_MODE === 'true';
+    return hasDemoParam || pathIndicatesDemo || envDemo;
   }, [location.pathname, location.search]);
 
   const refreshVersion = useCallback(async () => {
     if (!isAuthenticated) return;
     setIsVersionLoading(true);
     try {
-      const response = await api.get<VersionInfo>('/api/system/version');
+      const response = await api.get<VersionInfo>('/system/version');
       setVersionInfo(response.data);
     } catch (err) {
       // Swallow errors to avoid blocking UI; version will remain null.

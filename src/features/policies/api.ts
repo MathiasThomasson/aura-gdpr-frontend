@@ -29,33 +29,33 @@ const normalizeList = (payload: unknown): PolicyItem[] => {
 };
 
 export async function getAllPolicies(): Promise<PolicyItem[]> {
-  const res = await api.get('/api/policies');
+  const res = await api.get('/policies');
   return normalizeList(res.data);
 }
 
 export async function getPolicy(id: string): Promise<PolicyItem> {
-  const res = await api.get(`/api/policies/${id}`);
+  const res = await api.get(`/policies/${id}`);
   return mapPolicy(res.data);
 }
 
 export async function createPolicy(payload: Omit<PolicyItem, 'id'>): Promise<PolicyItem> {
-  const res = await api.post('/api/policies', payload);
+  const res = await api.post('/policies', payload);
   return mapPolicy(res.data);
 }
 
 export async function updatePolicy(id: string, payload: Partial<PolicyItem>): Promise<PolicyItem> {
-  const res = await api.put(`/api/policies/${id}`, payload);
+  const res = await api.put(`/policies/${id}`, payload);
   return mapPolicy(res.data);
 }
 
 export async function patchPolicy(id: string, payload: Partial<PolicyItem>): Promise<PolicyItem> {
-  const res = await api.patch(`/api/policies/${id}`, payload);
+  const res = await api.patch(`/policies/${id}`, payload);
   return mapPolicy(res.data);
 }
 
 export async function generatePolicyWithAi(input: GeneratePolicyInput): Promise<GeneratePolicyResult> {
   try {
-    const res = await api.post('/api/ai/policies/generate', {
+    const res = await api.post('/ai/policies/generate', {
       policy_type: input.policyType,
       context_description: input.contextDescription ?? '',
       language: 'en',

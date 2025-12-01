@@ -42,7 +42,7 @@ const toArray = (value: unknown): string[] => {
 
 export async function evaluateRisk(params: RiskEvaluationParams): Promise<RiskEvaluation> {
   try {
-    const res = await api.post('/api/ai/risk/evaluate', params);
+    const res = await api.post('/ai/risk/evaluate', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       likelihood: normalizeScore(data.likelihood),

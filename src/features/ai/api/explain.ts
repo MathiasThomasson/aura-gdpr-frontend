@@ -14,7 +14,7 @@ export type ExplainResult = {
 
 export async function explainText(params: ExplainParams): Promise<ExplainResult> {
   try {
-    const res = await api.post('/api/ai/explain', params);
+    const res = await api.post('/ai/explain', params);
     const data = (res.data ?? {}) as Record<string, unknown>;
     return {
       explanation: typeof data.explanation === 'string' ? data.explanation : typeof data.answer === 'string' ? data.answer : '',

@@ -5,7 +5,7 @@ export async function exportResourceToPdf(payload: PdfExportPayload): Promise<vo
   console.log('PDF export stub called with payload:', payload);
 
   // Example of how this could be implemented later:
-  // const res = await fetch('/api/exports/pdf', {
+  // const res = await fetch('/exports/pdf', {
   //   method: 'POST',
   //   headers: { 'Content-Type': 'application/json' },
   //   body: JSON.stringify(payload),
