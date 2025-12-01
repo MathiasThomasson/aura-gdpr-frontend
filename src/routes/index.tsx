@@ -18,6 +18,7 @@ import DataSubjectRequestsPage from '@/pages/DataSubjectRequestsPage';
 import DsrPortalPage from '@/pages/DsrPortalPage';
 import NotificationsPage from '@/features/notifications/NotificationsPage';
 import AiAuditPage from '@/features/ai-audit/AiAuditPage';
+import AiAuditV2Page from '@/features/ai-audit/AiAuditV2Page';
 import AdminDsrPortalSettingsPage from '@/pages/AdminDsrPortalSettingsPage';
 import NotificationSettingsPage from '@/pages/NotificationSettingsPage';
 import PoliciesPage from '@/pages/PoliciesPage';
@@ -58,6 +59,7 @@ const AppRoutes = () => (
       <Route path="documents" element={<DocumentsPage />} />
       <Route path="ai-assistant" element={<AIAssistantPage />} />
       <Route path="ai-audit" element={<AiAuditPage />} />
+      <Route path="ai/audit-v2" element={<AiAuditV2Page />} />
       <Route path="tasks" element={<TasksPage />} />
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="audit" element={<AuditPage />} />

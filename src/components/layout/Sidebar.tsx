@@ -75,6 +75,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'AI Assistant', path: '/app/ai-assistant', icon: Sparkles },
       { label: 'AI Policy Generator', icon: FileText, disabled: true },
       { label: 'AI Audit Engine', path: '/app/ai-audit', icon: Gauge },
+      { label: 'AI Audit v2', path: '/app/ai/audit-v2', icon: Gauge },
     ],
   },
   {
