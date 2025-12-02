@@ -14,7 +14,7 @@ import ProjectsPage from '@/pages/ProjectsPage';
 import AuditPage from '@/pages/AuditPage';
 import RiskMatrixPage from '@/pages/RiskMatrixPage';
 import DpiaPage from '@/pages/DpiaPage';
-import DataSubjectRequestsPage from '@/pages/DataSubjectRequestsPage';
+import DSRPage from '@/pages/dsr/DSRPage';
 import DsrPortalPage from '@/pages/DsrPortalPage';
 import NotificationsPage from '@/features/notifications/NotificationsPage';
 import AiAuditPage from '@/features/ai-audit/AiAuditPage';
@@ -101,7 +101,7 @@ const AppRoutes = () => (
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="audit" element={<AuditPage />} />
       <Route path="risk-matrix" element={<RiskMatrixPage />} />
-      <Route path="dsr" element={<DataSubjectRequestsPage />} />
+      <Route path="dsr" element={<DSRPage />} />
       <Route path="dpia" element={<DpiaPage />} />
       <Route path="ropa" element={<RopaPage />} />
       <Route path="cookies" element={<CookiesPage />} />
