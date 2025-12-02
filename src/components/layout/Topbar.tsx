@@ -65,7 +65,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onAskAura }) => {
   const location = useLocation();
 
   const displayName = user?.name || user?.email || 'AURA User';
-  const role = user?.role || 'Member';
+  const role = user?.role ? user.role : '';
   const tenantName = user?.tenantName || 'Acme Privacy Ltd.';
   const planLabel =
     currentPlan.trialDaysLeft > 0 ? `Free trial - ${currentPlan.trialDaysLeft} days left` : 'Pro plan';

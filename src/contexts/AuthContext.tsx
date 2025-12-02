@@ -49,18 +49,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsAuthenticated(true);
   }, []);
 
-  const fetchCurrentUser = useCallback(async (): Promise<User | null> => {
-    try {
-      const res = await api.get<User>('/auth/me');
-      if (res.data) {
-        setUser(res.data);
-        setUserState(res.data);
-        return res.data;
-      }
-      return null;
-    } catch (err) {
-      return null;
+  const fetchCurrentUser = useCallback(async (): Promise<User> => {
+    const res = await api.get<User>('/auth/me');
+    if (!res.data) {
+      throw new Error('Failed to load user');
     }
+    setUser(res.data);
+    setUserState(res.data);
+    return res.data;
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -86,9 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { tokens, user: refreshedUser } = mapAuthResponse(response);
       persistSession(tokens, refreshedUser ?? existingUser ?? undefined);
       setSession(tokens, refreshedUser ?? existingUser ?? undefined);
-      if (!refreshedUser) {
-        await fetchCurrentUser();
-      }
+      await fetchCurrentUser();
     } catch (err: any) {
       handleLogout();
       toast({
@@ -108,45 +102,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAccessToken(storedAccess);
         if (storedUser) setUserState(storedUser);
         setIsAuthenticated(true);
-        await refreshSession();
-        if (!storedUser) {
+        try {
           await fetchCurrentUser();
+        } catch {
+          handleLogout();
+          return;
         }
+        await refreshSession();
       }
     };
     bootstrap();
-  }, [fetchCurrentUser, refreshSession]);
+  }, [fetchCurrentUser, handleLogout, refreshSession]);
 
   const login = useCallback(
     async (email: string, password: string) => {
       const res = await api.post<AuthResponse>('/auth/login', { email, password });
-      const { tokens, user: nextUser } = mapAuthResponse(res.data);
-      setSession(tokens, nextUser);
-      const resolvedUser = nextUser ?? (await fetchCurrentUser());
-      if (!resolvedUser) {
-        throw new Error('Unable to load user profile.');
+      const { tokens } = mapAuthResponse(res.data);
+      setSession(tokens);
+      try {
+        const me = await fetchCurrentUser();
+        toast({ title: 'Login Successful', description: 'Welcome back!' });
+        navigate('/app/dashboard', { replace: true });
+        return me;
+      } catch (err) {
+        handleLogout();
+        throw err;
       }
-      toast({ title: 'Login Successful', description: 'Welcome back!' });
-      navigate('/app/dashboard', { replace: true });
-      return resolvedUser;
     },
-    [fetchCurrentUser, navigate, setSession, toast]
+    [fetchCurrentUser, handleLogout, navigate, setSession, toast]
   );
 
   const register = useCallback(
     async (email: string, password: string) => {
       const res = await api.post<AuthResponse>('/auth/register', { email, password });
-      const { tokens, user: nextUser } = mapAuthResponse(res.data);
-      setSession(tokens, nextUser);
-      const resolvedUser = nextUser ?? (await fetchCurrentUser());
-      if (!resolvedUser) {
-        throw new Error('Unable to load user profile.');
+      const { tokens } = mapAuthResponse(res.data);
+      setSession(tokens);
+      try {
+        const me = await fetchCurrentUser();
+        toast({ title: 'Registration Successful', description: 'Your account has been created.' });
+        navigate('/app/dashboard', { replace: true });
+        return me;
+      } catch (err) {
+        handleLogout();
+        throw err;
       }
-      toast({ title: 'Registration Successful', description: 'Your account has been created.' });
-      navigate('/app/dashboard', { replace: true });
-      return resolvedUser;
     },
-    [fetchCurrentUser, navigate, setSession, toast]
+    [fetchCurrentUser, handleLogout, navigate, setSession, toast]
   );
 
   const logout = useCallback(() => {
