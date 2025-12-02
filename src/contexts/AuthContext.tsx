@@ -97,18 +97,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const bootstrap = async () => {
       const storedAccess = getAccessToken();
       const storedRefresh = getRefreshToken();
-      const storedUser = getUser();
       if (storedAccess && storedRefresh) {
         setAccessToken(storedAccess);
-        if (storedUser) setUserState(storedUser);
         setIsAuthenticated(true);
         try {
           await fetchCurrentUser();
+          await refreshSession();
         } catch {
           handleLogout();
-          return;
         }
-        await refreshSession();
       }
     };
     bootstrap();
@@ -117,19 +114,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = useCallback(
     async (email: string, password: string) => {
       const res = await api.post<AuthResponse>('/auth/login', { email, password });
-      const { tokens } = mapAuthResponse(res.data);
-      setSession(tokens);
-      try {
-        const me = await fetchCurrentUser();
-        toast({ title: 'Login Successful', description: 'Welcome back!' });
-        navigate('/app/dashboard', { replace: true });
-        return me;
-      } catch (err) {
-        handleLogout();
-        throw err;
+      const { access_token, refresh_token } = res.data;
+      if (!access_token || !refresh_token) {
+        throw new Error('Invalid login response');
       }
+      setTokens(access_token, refresh_token);
+      setAccessToken(access_token);
+      setIsAuthenticated(true);
+
+      const me = await fetchCurrentUser();
+      toast({ title: 'Login Successful', description: 'Welcome back!' });
+      navigate('/app/dashboard', { replace: true });
+      return me;
     },
-    [fetchCurrentUser, handleLogout, navigate, setSession, toast]
+    [fetchCurrentUser, navigate, toast]
   );
 
   const register = useCallback(
