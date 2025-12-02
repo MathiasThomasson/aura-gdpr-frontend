@@ -100,6 +100,16 @@ const DocumentsPage: React.FC = () => {
         description="Centralize policies, agreements, and guidelines. Future AI assistance will help you draft, review, and publish faster."
       />
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">Documents guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>Use this space to store GDPR evidence, templates, and signed agreements.</li>
+          <li>Every file keeps version history so you can track who changed what.</li>
+          <li>AI-assisted generation drafts policies and notices faster.</li>
+          <li>Upload rules: PDF and DOCX are supported for storage and review.</li>
+        </ul>
+      </div>
+
       <DocumentFiltersBar
         search={search}
         status={status}

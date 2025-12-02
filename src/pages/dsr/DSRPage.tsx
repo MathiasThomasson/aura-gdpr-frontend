@@ -121,6 +121,18 @@ const DSRPage: React.FC = () => {
           description="Track and manage GDPR data subject requests such as access, erasure, rectification, and objection."
         />
 
+        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="text-sm font-semibold text-slate-900">DSR guidance</h3>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+            <li>A Data Subject Request lets an individual exercise their privacy rights.</li>
+            <li>Workflow: Received → Verification → Investigation → Completed.</li>
+            <li>30-day rule: respond and close within 30 days unless extended.</li>
+            <li>Create a new DSR with the New Request button and capture the requester details.</li>
+            <li>Results are stored in this list and inside each request timeline.</li>
+            <li>Export a PDF from the request drawer to share evidence.</li>
+          </ul>
+        </div>
+
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-foreground">Data Subject Requests</h1>

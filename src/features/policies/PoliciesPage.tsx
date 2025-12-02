@@ -163,6 +163,16 @@ const PoliciesPage: React.FC = () => {
         description="Centralize policy creation, reviews, and publication. AI-assisted drafts will help you ship faster."
       />
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">Policies guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>Internal policies guide staff; public-facing policies inform customers.</li>
+          <li>AI Policy Generator drafts starting content you can edit and approve.</li>
+          <li>Store policies here, track updates, and keep a single source of truth.</li>
+          <li>Export policies for audits, training, or website publication.</li>
+        </ul>
+      </div>
+
       <PolicyFiltersBar
         search={search}
         status={status}

@@ -72,6 +72,15 @@ const AccountSettingsPage: React.FC = () => {
         <h1 className="text-3xl font-bold tracking-tight text-foreground">Account Settings</h1>
         <p className="text-md text-muted-foreground">Manage your profile, password, and data preferences.</p>
       </motion.div>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">Settings guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>Tenant settings control workspace name, locale, and branding.</li>
+          <li>User management adds or removes teammates and assigns roles.</li>
+          <li>Subscription and billing (upcoming) will manage plan and invoices.</li>
+          <li>API keys let you integrate AURA GDPR with other systems.</li>
+        </ul>
+      </div>
       <div className="flex items-center gap-2">
         <NavLink
           to="/app/settings"

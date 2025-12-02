@@ -115,6 +115,17 @@ const DpiaPage: React.FC = () => {
         onRiskChange={setRisk}
       />
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">DPIA guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>A Data Protection Impact Assessment evaluates high-risk processing.</li>
+          <li>Mandatory when processing is likely to cause high risk to individuals.</li>
+          <li>Risk scoring combines likelihood and impact for an overall level.</li>
+          <li>Create a DPIA for new systems, large datasets, or sensitive processing.</li>
+          <li>Export completed DPIAs for sign-off and evidence.</li>
+        </ul>
+      </div>
+
       <DpiaTable dpias={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
       {error && <p className="text-sm text-rose-600">{error}</p>}
 

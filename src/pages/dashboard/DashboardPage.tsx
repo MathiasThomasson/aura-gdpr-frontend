@@ -68,6 +68,17 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">Dashboard guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>Global GDPR overview shows live posture across all modules.</li>
+          <li>Compliance score explains how close you are to meeting baseline controls.</li>
+          <li>Open tasks highlight the next actions to reduce risk.</li>
+          <li>Deadlines overview surfaces upcoming due dates for DSRs, DPIAs, and reviews.</li>
+          <li>Modules live in the left navigation: DSRs, Documents, ROPA, DPIA, Incidents, Policies, Settings.</li>
+        </ul>
+      </div>
+
       {!usingDemoData && error && (
         <div className="flex items-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
           <AlertCircle className="h-4 w-4" />

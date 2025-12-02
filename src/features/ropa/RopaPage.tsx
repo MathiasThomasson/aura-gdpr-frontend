@@ -93,6 +93,16 @@ const RopaPage: React.FC = () => {
         onOwnerChange={setOwner}
       />
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">ROPA guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>A Record of Processing Activities lists every way you handle personal data.</li>
+          <li>Every company must maintain it to show accountability.</li>
+          <li>Add each processing activity with purpose, legal basis, and retention.</li>
+          <li>Export the report to share with auditors or regulators.</li>
+        </ul>
+      </div>
+
       <RopaTable records={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
       {error && <p className="text-sm text-rose-600">{error}</p>}
 

@@ -151,6 +151,16 @@ const IncidentsPage: React.FC = () => {
         onStatusChange={setStatus}
       />
 
+      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <h3 className="text-sm font-semibold text-slate-900">Incidents guidance</h3>
+        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+          <li>A personal data breach includes loss, theft, or unauthorized access.</li>
+          <li>72-hour rule: notify the regulator within 72 hours when required.</li>
+          <li>Log every incident with facts, containment, and remediation steps.</li>
+          <li>AI-based analysis is a planned module to speed triage and lessons learned.</li>
+        </ul>
+      </div>
+
       {renderContent()}
 
       <IncidentDetailsDrawer
