@@ -33,6 +33,7 @@ type NavItem = {
   icon: LucideIcon;
   disabled?: boolean;
   adminOnly?: boolean;
+  platformAdminOnly?: boolean;
 };
 
 type NavSection = {
@@ -67,6 +68,7 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Audit Log', path: '/app/audit', icon: ClipboardList },
       { label: 'Notifications', path: '/app/notifications', icon: Bell },
       { label: 'Admin', path: '/app/admin', icon: ShieldCheck, adminOnly: true },
+      { label: 'Users & Roles', path: '/app/admin/workspace/users', icon: ShieldCheck, adminOnly: true },
     ],
   },
   {
@@ -87,6 +89,10 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Security health', path: '/app/security-health', icon: ShieldAlert },
     ],
   },
+  {
+    title: 'Platform',
+    items: [{ label: 'Platform Admin', path: '/app/platform-admin', icon: ShieldCheck, platformAdminOnly: true }],
+  },
 ];
 
 type SidebarProps = {
@@ -95,16 +101,22 @@ type SidebarProps = {
 };
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { user } = useAuth() as { user?: { role?: string } };
-  const isAdmin = user?.role === 'Admin';
+  const { user } = useAuth() as { user?: { role?: string; email?: string } };
+  const role = user?.role?.toString().toLowerCase();
+  const isAdmin = role === 'admin' || role === 'owner';
+  const isPlatformAdmin = user?.email?.toLowerCase() === 'admin@aura-gdpr.se';
 
   const sections = React.useMemo(
     () =>
       NAV_SECTIONS.map((section) => ({
         ...section,
-        items: section.items.filter((item) => (item.adminOnly ? isAdmin : true)),
+        items: section.items.filter((item) => {
+          if (item.platformAdminOnly) return isPlatformAdmin;
+          if (item.adminOnly) return isAdmin;
+          return true;
+        }),
       })).filter((section) => section.items.length > 0),
-    [isAdmin]
+    [isAdmin, isPlatformAdmin]
   );
 
   const renderNavItem = (item: NavItem) => {

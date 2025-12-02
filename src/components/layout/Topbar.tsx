@@ -45,6 +45,8 @@ const PAGE_TITLES: Record<string, string> = {
   '/app/settings': 'Settings',
   '/app/settings/notifications': 'Notification Settings',
   '/app/admin': 'Admin',
+  '/app/admin/workspace/users': 'Workspace Users & Roles',
+  '/app/platform-admin': 'Platform Admin',
   '/app/admin/dsr-portal': 'DSR Portal Admin',
   '/app/notifications': 'Notifications',
 };

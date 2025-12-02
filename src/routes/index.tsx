@@ -27,6 +27,8 @@ import RopaPage from '@/pages/RopaPage';
 import TomsPage from '@/pages/TomsPage';
 import CookiesPage from '@/pages/CookiesPage';
 import IamPage from '@/pages/IamPage';
+import WorkspaceUsersPage from '@/pages/admin/WorkspaceUsersPage';
+import PlatformAdminPage from '@/pages/admin/PlatformAdminPage';
 import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 import SecurityHealthPage from '@/pages/SecurityHealthPage';
@@ -113,6 +115,8 @@ const AppRoutes = () => (
       <Route path="settings" element={<AccountSettingsPage />} />
       <Route path="settings/notifications" element={<NotificationSettingsPage />} />
       <Route path="admin" element={<AdminPage />} />
+      <Route path="admin/workspace/users" element={<WorkspaceUsersPage />} />
+      <Route path="platform-admin" element={<PlatformAdminPage />} />
       <Route path="admin/dsr-portal" element={<AdminDsrPortalSettingsPage />} />
     </Route>
     <Route path="/error" element={<ErrorPage />} />
