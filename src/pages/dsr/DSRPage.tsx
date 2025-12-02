@@ -9,6 +9,7 @@ import useDataSubjectRequests from '@/features/dsr/hooks/useDataSubjectRequests'
 import { DataSubjectRequest, DataSubjectRequestStatus } from '@/features/dsr/types';
 import useCreateDSR, { NewDsrRequestPayload } from '@/hooks/dsr/useCreateDSR';
 import NewRequestModal from '@/components/dsr/NewRequestModal';
+import PublicDsrSettings from '@/components/dsr/PublicDsrSettings';
 import { useSystemStatus } from '@/contexts/SystemContext';
 import { useUserProgress } from '@/contexts/UserProgressContext';
 
@@ -120,6 +121,8 @@ const DSRPage: React.FC = () => {
           title="Data Subject Requests"
           description="Track and manage GDPR data subject requests such as access, erasure, rectification, and objection."
         />
+
+        <PublicDsrSettings />
 
         <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900">DSR guidance</h3>

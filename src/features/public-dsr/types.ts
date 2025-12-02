@@ -7,11 +7,12 @@ export type PublicDsrRequestType =
   | 'objection'
   | 'other';
 
+export type PublicDsrPriority = 'low' | 'medium' | 'high';
+
 export type PublicDsrPayload = {
   fullName: string;
   email: string;
   requestType: PublicDsrRequestType;
-  identifier?: string;
   description: string;
-  confirmAccuracy?: boolean;
+  priority: PublicDsrPriority;
 };

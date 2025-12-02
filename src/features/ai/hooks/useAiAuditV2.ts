@@ -1,5 +1,5 @@
-﻿import { useCallback, useState } from 'react';
-import { runAiAuditV2, type AuditV2Result } from '../auditV2';
+import { useCallback, useState } from 'react';
+import { runAiAuditV2, type AuditV2Result } from '../api/auditV2';
 
 export function useAiAuditV2() {
   const [result, setResult] = useState<AuditV2Result | null>(null);

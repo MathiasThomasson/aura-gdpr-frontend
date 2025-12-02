@@ -33,10 +33,10 @@ import NotFoundPage from '@/pages/NotFoundPage';
 import ErrorPage from '@/pages/ErrorPage';
 import SecurityHealthPage from '@/pages/SecurityHealthPage';
 import { useAuth } from '@/contexts/AuthContext';
-import PublicDataSubjectRequestPage from '@/features/public-dsr/PublicDataSubjectRequestPage';
 import LandingPage from '@/features/marketing/LandingPage';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import OnboardingPage from '@/features/onboarding/OnboardingPage';
+import PublicDsrFormPage from '@/pages/public/PublicDsrFormPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -68,7 +68,7 @@ const AppRoutes = () => (
     <Route path="/" element={<LandingPage />} />
     <Route path="/demo" element={<Navigate to="/app/dashboard?demo=1" replace />} />
     <Route path="/dsr-portal" element={<DsrPortalPage />} />
-    <Route path="/public/dsr/:tenantSlug" element={<PublicDataSubjectRequestPage />} />
+    <Route path="/public/dsr/:publicKey" element={<PublicDsrFormPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
     <Route

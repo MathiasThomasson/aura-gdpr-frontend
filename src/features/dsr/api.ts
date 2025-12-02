@@ -4,6 +4,7 @@ import {
   DataSubjectRequest,
   DataSubjectRequestStatus,
   DataSubjectRequestType,
+  PublicDsrLink,
 } from './types';
 
 const statusFallback = (value: any): DataSubjectRequestStatus => {
@@ -48,6 +49,15 @@ const normalizeList = (payload: unknown): DataSubjectRequest[] => {
   return [];
 };
 
+const normalizePublicLink = (payload: any): PublicDsrLink => {
+  const publicKey = payload?.public_key ?? payload?.publicKey ?? null;
+  const enabled = payload?.enabled ?? Boolean(publicKey);
+  return {
+    enabled: Boolean(enabled),
+    publicKey: publicKey ?? null,
+  };
+};
+
 export async function getDsrs(): Promise<DataSubjectRequest[]> {
   const res = await api.get('/dsr');
   return normalizeList(res.data);
@@ -74,4 +84,19 @@ export async function updateDsrStatus(
 export async function createPublicDsr(tenantSlug: string, payload: unknown): Promise<void> {
   if (!tenantSlug) throw new Error('Missing tenant identifier.');
   await api.post(`/public/dsr/${tenantSlug}`, payload);
+}
+
+export async function getPublicDsrLink(): Promise<PublicDsrLink> {
+  const res = await api.get('/dsr/public-link');
+  return normalizePublicLink(res.data);
+}
+
+export async function enablePublicDsrLink(): Promise<PublicDsrLink> {
+  const res = await api.post('/dsr/public-link/enable');
+  return normalizePublicLink(res.data);
+}
+
+export async function disablePublicDsrLink(): Promise<PublicDsrLink> {
+  const res = await api.post('/dsr/public-link/disable');
+  return normalizePublicLink(res.data);
 }

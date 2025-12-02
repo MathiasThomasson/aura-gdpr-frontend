@@ -51,3 +51,8 @@ export type CreateDataSubjectRequestInput = {
   due_at: string;
   priority?: DataSubjectRequestPriority;
 };
+
+export type PublicDsrLink = {
+  enabled: boolean;
+  publicKey: string | null;
+};

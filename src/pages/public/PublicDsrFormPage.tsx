@@ -1,15 +1,21 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Shield, ArrowLeft } from 'lucide-react';
-import PublicDsrForm from './components/PublicDsrForm';
+import { AlertTriangle, ArrowLeft, Shield } from 'lucide-react';
+import PublicDsrForm from '@/features/public-dsr/components/PublicDsrForm';
 
 type RouteParams = {
-  tenantSlug?: string;
+  publicKey?: string;
 };
 
-const PublicDataSubjectRequestPage: React.FC = () => {
-  const { tenantSlug } = useParams<RouteParams>();
+const PublicDsrFormPage: React.FC = () => {
+  const { publicKey } = useParams<RouteParams>();
   const [submitted, setSubmitted] = React.useState(false);
+  const [unavailable, setUnavailable] = React.useState(!publicKey);
+
+  React.useEffect(() => {
+    setUnavailable(!publicKey);
+    setSubmitted(false);
+  }, [publicKey]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50 px-4 py-10">
@@ -25,26 +31,24 @@ const PublicDataSubjectRequestPage: React.FC = () => {
         </div>
 
         <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-          {!submitted ? (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-lg font-semibold text-slate-900">Tell us about your request</h2>
-                <p className="text-sm text-slate-600">
-                  Use this form to submit a GDPR data subject request to the organization. Your request will be handled
-                  by the data protection team.
-                </p>
+          {unavailable ? (
+            <div className="space-y-3 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-700">
+                <AlertTriangle className="h-7 w-7" />
               </div>
-              <PublicDsrForm tenantSlug={tenantSlug ?? ''} onSuccess={() => setSubmitted(true)} />
+              <h2 className="text-xl font-semibold text-slate-900">Public form unavailable</h2>
+              <p className="text-sm text-slate-600">
+                This public request form is not available. Please contact the organization directly.
+              </p>
             </div>
-          ) : (
+          ) : submitted ? (
             <div className="space-y-4 text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                 <Shield className="h-7 w-7" />
               </div>
-              <h2 className="text-xl font-semibold text-slate-900">Your request has been submitted</h2>
+              <h2 className="text-xl font-semibold text-slate-900">Your request has been received</h2>
               <p className="text-sm text-slate-600">
-                We have received your data subject request. You will be contacted via email as soon as your request has
-                been processed.
+                Your request has been received. You will be contacted as soon as possible.
               </p>
               <button
                 type="button"
@@ -54,6 +58,21 @@ const PublicDataSubjectRequestPage: React.FC = () => {
                 <ArrowLeft className="h-4 w-4" />
                 Submit another request
               </button>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-lg font-semibold text-slate-900">Tell us about your request</h2>
+                <p className="text-sm text-slate-600">
+                  Use this form to exercise your data protection rights. Please provide accurate contact details so we
+                  can respond to your request.
+                </p>
+              </div>
+              <PublicDsrForm
+                publicKey={publicKey ?? ''}
+                onSuccess={() => setSubmitted(true)}
+                onUnavailable={() => setUnavailable(true)}
+              />
             </div>
           )}
         </div>
@@ -66,4 +85,4 @@ const PublicDataSubjectRequestPage: React.FC = () => {
   );
 };
 
-export default PublicDataSubjectRequestPage;
+export default PublicDsrFormPage;
