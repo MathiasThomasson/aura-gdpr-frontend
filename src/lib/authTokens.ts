@@ -26,7 +26,10 @@ export const triggerLogout = () => {
   if (logoutHandler) {
     logoutHandler();
   } else {
-    window.location.replace('/login');
+    const path = window.location?.pathname ?? '';
+    if (path.startsWith('/app') || path.startsWith('/onboarding')) {
+      window.location.replace('/login');
+    }
   }
 };
 

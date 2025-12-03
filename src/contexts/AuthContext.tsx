@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '@/lib/apiClient';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -34,6 +34,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [user, setUserState] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -65,8 +66,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserState(null);
     setAccessToken(null);
     setIsAuthenticated(false);
-    navigate('/login', { replace: true });
-  }, [navigate]);
+    if (location.pathname.startsWith('/app') || location.pathname.startsWith('/onboarding')) {
+      navigate('/login', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     registerLogoutHandler(handleLogout);
@@ -114,6 +117,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     bootstrap();
   }, [fetchCurrentUser, handleLogout, refreshSession]);
+
+  useEffect(() => {
+    if (!isAuthenticated && location.pathname.startsWith('/app')) {
+      navigate('/login', { replace: true });
+    }
+  }, [isAuthenticated, location.pathname, navigate]);
 
   const login = useCallback(
     async (email: string, password: string) => {
