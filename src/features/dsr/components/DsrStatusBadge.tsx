@@ -6,8 +6,8 @@ const statusStyles: Record<
   { label: string; classes: string }
 > = {
   received: { label: 'Received', classes: 'bg-slate-100 text-slate-800 border-slate-200' },
-  identity_required: { label: 'Identity required', classes: 'bg-amber-50 text-amber-700 border-amber-200' },
-  in_progress: { label: 'In progress', classes: 'bg-sky-50 text-sky-700 border-sky-200' },
+  identity_required: { label: 'Identity verification', classes: 'bg-sky-50 text-sky-700 border-sky-200' },
+  in_progress: { label: 'In progress', classes: 'bg-sky-100 text-sky-800 border-sky-200' },
   waiting_for_information: { label: 'Waiting for information', classes: 'bg-amber-50 text-amber-700 border-amber-200' },
   completed: { label: 'Completed', classes: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   rejected: { label: 'Rejected', classes: 'bg-rose-50 text-rose-700 border-rose-200' },

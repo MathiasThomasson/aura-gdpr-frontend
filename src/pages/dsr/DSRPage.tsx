@@ -4,6 +4,7 @@ import PageInfoBox from '@/components/PageInfoBox';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import DsrStatusBadge from '@/features/dsr/components/DsrStatusBadge';
+import DsrStatusMenu from '@/features/dsr/components/DsrStatusMenu';
 import DsrDetailsDrawer from '@/features/dsr/components/DsrDetailsDrawer';
 import useDataSubjectRequests from '@/features/dsr/hooks/useDataSubjectRequests';
 import { DataSubjectRequest, DataSubjectRequestStatus } from '@/features/dsr/types';
@@ -13,8 +14,9 @@ import PublicDsrSettings from '@/components/dsr/PublicDsrSettings';
 import { useSystemStatus } from '@/contexts/SystemContext';
 import { useUserProgress } from '@/contexts/UserProgressContext';
 import EmptyState from '@/components/EmptyState';
+import { Switch } from '@/components/ui/switch';
 
-type StatusFilter = 'all' | 'open' | 'completed' | 'rejected';
+type StatusFilter = 'all' | 'open' | 'received' | 'identity_required' | 'in_progress' | 'completed' | 'rejected';
 
 const formatDate = (value?: string | null) => {
   if (!value) return 'N/A';
@@ -28,12 +30,7 @@ const formatType = (value?: string) => {
   return value.slice(0, 1).toUpperCase() + value.slice(1);
 };
 
-const openStatuses: DataSubjectRequestStatus[] = [
-  'received',
-  'identity_required',
-  'in_progress',
-  'waiting_for_information',
-];
+const openStatuses: DataSubjectRequestStatus[] = ['received', 'identity_required', 'in_progress', 'waiting_for_information'];
 
 const dueTone = (value?: string | null) => {
   if (!value) return '';
@@ -48,7 +45,18 @@ const dueTone = (value?: string | null) => {
 };
 
 const DSRPage: React.FC = () => {
-  const { data, loading, detailLoading, error, reload, updateStatus, fetchDetail } = useDataSubjectRequests();
+  const {
+    data,
+    loading,
+    detailLoading,
+    error,
+    reload,
+    updateStatus,
+    fetchDetail,
+    setStatusFilter: setStatusFilterParam,
+    overdueOnly,
+    setOverdueOnly,
+  } = useDataSubjectRequests();
   const { toast } = useToast();
   const { demoMode } = useSystemStatus();
   const { markComplete } = useUserProgress();
@@ -57,6 +65,8 @@ const DSRPage: React.FC = () => {
   const [selectedDsr, setSelectedDsr] = React.useState<DataSubjectRequest | null>(null);
   const [drawerError, setDrawerError] = React.useState<string | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const [statusMenuOpen, setStatusMenuOpen] = React.useState(false);
+  const [statusMenuTarget, setStatusMenuTarget] = React.useState<DataSubjectRequest | null>(null);
   const hasAnyRequests = data.length > 0;
 
   const { createRequest, loading: creating, error: createError } = useCreateDSR({
@@ -67,12 +77,17 @@ const DSRPage: React.FC = () => {
     },
   });
 
-  const filteredData = React.useMemo(() => {
-    if (statusFilter === 'all') return data;
-    if (statusFilter === 'completed') return data.filter((item) => item.status === 'completed');
-    if (statusFilter === 'rejected') return data.filter((item) => item.status === 'rejected');
-    return data.filter((item) => openStatuses.includes(item.status));
-  }, [data, statusFilter]);
+  React.useEffect(() => {
+    const nextStatusParam =
+      statusFilter === 'all'
+        ? undefined
+        : statusFilter === 'open'
+          ? openStatuses
+          : statusFilter;
+    setStatusFilterParam(nextStatusParam as any);
+  }, [setStatusFilterParam, statusFilter]);
+
+  const filteredData = data;
 
   const handleRowClick = (dsr: DataSubjectRequest) => {
     setSelectedDsr(dsr);
@@ -84,19 +99,36 @@ const DSRPage: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (nextStatus: DataSubjectRequestStatus) => {
-    if (!selectedDsr?.id) return;
+  const handleStatusChange = async (
+    nextStatus: DataSubjectRequestStatus,
+    note?: string,
+    target?: DataSubjectRequest | null
+  ) => {
+    const targetDsr = target ?? selectedDsr;
+    if (!targetDsr?.id) return;
+    if (nextStatus === targetDsr.status) return;
     setIsUpdating(true);
     setDrawerError(null);
     try {
-      const updated = await updateStatus(selectedDsr.id, nextStatus);
-      setSelectedDsr(updated);
-      toast({ title: 'Status updated', description: `Request marked as ${formatType(nextStatus)}.` });
+      const updated = await updateStatus(targetDsr.id, nextStatus, note);
+      if (selectedDsr?.id === updated.id) {
+        setSelectedDsr(updated);
+      }
+      await reload();
+      toast({ title: 'Status updated', description: 'Status updated successfully.' });
     } catch (err: any) {
       setDrawerError(err?.message ?? 'Failed to update status. Please try again.');
+      toast({ variant: 'destructive', title: 'Failed to update status', description: err?.message ?? 'Please try again.' });
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleStatusMenuSubmit = async (newStatus: DataSubjectRequestStatus, note?: string) => {
+    if (!statusMenuTarget?.id || newStatus === statusMenuTarget.status) return;
+    await handleStatusChange(newStatus, note, statusMenuTarget);
+    setStatusMenuOpen(false);
+    setStatusMenuTarget(null);
   };
 
   const closeDrawer = () => {
@@ -167,25 +199,36 @@ const DSRPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-4 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm">
           <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-slate-700">
             <Filter className="h-4 w-4 text-slate-500" />
-            Status
+            Filters
           </div>
-          {(['all', 'open', 'completed', 'rejected'] as StatusFilter[]).map((filter) => (
-            <button
-              key={filter}
-              type="button"
-              className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                statusFilter === filter
-                  ? 'border-sky-500 bg-sky-50 text-sky-700'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-              }`}
-              onClick={() => setStatusFilter(filter)}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-slate-800" htmlFor="dsr-status-filter">
+              Status
+            </label>
+            <select
+              id="dsr-status-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
             >
-              {formatType(filter)}
-            </button>
-          ))}
+              <option value="all">All statuses</option>
+              <option value="received">Received</option>
+              <option value="identity_required">Identity verification</option>
+              <option value="in_progress">In progress</option>
+              <option value="open">Open</option>
+              <option value="completed">Completed</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Switch id="dsr-overdue-only" checked={overdueOnly} onCheckedChange={setOverdueOnly} />
+            <label htmlFor="dsr-overdue-only" className="text-sm text-slate-800">
+              Overdue only
+            </label>
+          </div>
         </div>
 
         {demoMode && (
@@ -222,14 +265,15 @@ const DSRPage: React.FC = () => {
             <div className="overflow-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-slate-500">
-                    <th className="py-2 pr-4 font-semibold">Type</th>
+                  <tr className="border-b bg-slate-50 text-left text-slate-500">
+                    <th className="py-2 pr-4 font-semibold">Request</th>
                     <th className="py-2 pr-4 font-semibold">Data subject</th>
                     <th className="py-2 pr-4 font-semibold">Email</th>
                     <th className="py-2 pr-4 font-semibold">Status</th>
                     <th className="py-2 pr-4 font-semibold">Received</th>
                     <th className="py-2 pr-4 font-semibold">Due date</th>
                     <th className="py-2 pr-4 font-semibold">Identifier</th>
+                    <th className="py-2 pr-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -246,18 +290,39 @@ const DSRPage: React.FC = () => {
                           handleRowClick(req);
                         }
                       }}
-                    >
-                      <td className="py-3 pr-4 font-semibold text-foreground">{formatType(req.type)}</td>
-                      <td className="py-3 pr-4 text-foreground">{req.data_subject}</td>
-                      <td className="py-3 pr-4 text-foreground">{req.email || 'N/A'}</td>
-                      <td className="py-3 pr-4">
-                        <DsrStatusBadge status={req.status} />
-                      </td>
-                      <td className="py-3 pr-4 text-foreground">{formatDate(req.received_at ?? req.createdAt)}</td>
-                      <td className={`py-3 pr-4 text-foreground ${dueTone(req.dueDate ?? req.due_at)}`}>
-                        {formatDate(req.dueDate ?? req.due_at)}
-                      </td>
-                      <td className="py-3 pr-4 text-foreground">{req.identifier || 'N/A'}</td>
+                      >
+                        <td className="py-3 pr-4 font-semibold text-foreground">{formatType(req.type)}</td>
+                        <td className="py-3 pr-4 text-foreground">{req.data_subject}</td>
+                        <td className="py-3 pr-4 text-foreground">{req.email || 'N/A'}</td>
+                        <td className="py-3 pr-4">
+                          <DsrStatusBadge status={req.status} />
+                        </td>
+                        <td className="py-3 pr-4 text-foreground">{formatDate(req.received_at ?? req.createdAt)}</td>
+                        <td className={`py-3 pr-4 text-foreground ${dueTone(req.dueDate ?? req.due_at)}`}>
+                          <div className="flex items-center gap-2">
+                            <span>{formatDate(req.dueDate ?? req.due_at)}</span>
+                            {req.is_overdue && req.status !== 'completed' && (
+                              <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                                Overdue
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 pr-4 text-foreground">{req.identifier || 'N/A'}</td>
+                        <td className="py-3 pr-4 text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setStatusMenuTarget(req);
+                              setStatusMenuOpen(true);
+                            }}
+                            disabled={isUpdating}
+                          >
+                            Change status
+                          </Button>
+                        </td>
                     </tr>
                   ))}
                 </tbody>
@@ -275,6 +340,17 @@ const DSRPage: React.FC = () => {
         isUpdating={isUpdating}
         error={drawerError}
         isLoading={detailLoading}
+      />
+
+      <DsrStatusMenu
+        open={statusMenuOpen && Boolean(statusMenuTarget)}
+        currentStatus={statusMenuTarget?.status ?? 'received'}
+        onClose={() => {
+          setStatusMenuOpen(false);
+          setStatusMenuTarget(null);
+        }}
+        onSubmit={handleStatusMenuSubmit}
+        isSubmitting={isUpdating}
       />
 
       <NewRequestModal

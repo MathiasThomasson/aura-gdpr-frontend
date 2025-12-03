@@ -9,6 +9,8 @@ export const useDataSubjectRequests = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [detailLoading, setDetailLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | string[] | undefined>(undefined);
+  const [overdueOnly, setOverdueOnly] = useState<boolean>(false);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -21,7 +23,10 @@ export const useDataSubjectRequests = () => {
     setLoading(true);
     setError(null);
     try {
-      const requests = await getDsrs();
+      const requests = await getDsrs({
+        status: statusFilter,
+        overdue: overdueOnly ? true : undefined,
+      });
       if (isMounted.current) {
         setData(requests);
       }
@@ -38,7 +43,7 @@ export const useDataSubjectRequests = () => {
     } finally {
       if (isMounted.current) setLoading(false);
     }
-  }, []);
+  }, [overdueOnly, statusFilter]);
 
   useEffect(() => {
     load();
@@ -55,13 +60,16 @@ export const useDataSubjectRequests = () => {
     []
   );
 
-  const updateStatus = useCallback(async (id: string, status: DataSubjectRequestStatus) => {
-    const updated = await updateDsrStatus(id, status);
-    if (isMounted.current) {
-      setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
-    }
-    return updated;
-  }, []);
+  const updateStatus = useCallback(
+    async (id: string, status: DataSubjectRequestStatus, note?: string) => {
+      const updated = await updateDsrStatus(id, status, note);
+      if (isMounted.current) {
+        setData((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      }
+      return updated;
+    },
+    []
+  );
 
   const fetchDetail = useCallback(
     async (id: string) => {
@@ -90,6 +98,10 @@ export const useDataSubjectRequests = () => {
     create,
     updateStatus,
     fetchDetail,
+    statusFilter,
+    setStatusFilter,
+    overdueOnly,
+    setOverdueOnly,
   };
 };
 

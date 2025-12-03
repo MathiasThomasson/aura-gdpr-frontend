@@ -39,6 +39,7 @@ const mapDsr = (item: any): DataSubjectRequest => ({
   dueDate: item?.dueDate ?? item?.due_at ?? null,
   createdAt: item?.createdAt ?? item?.created_at,
   updatedAt: item?.updatedAt ?? item?.updated_at,
+  is_overdue: item?.is_overdue ?? item?.overdue ?? false,
 });
 
 const normalizeList = (payload: unknown): DataSubjectRequest[] => {
@@ -58,9 +59,12 @@ const normalizePublicLink = (payload: any): PublicDsrLink => {
   };
 };
 
-export async function getDsrs(): Promise<DataSubjectRequest[]> {
+export async function getDsrs(params?: { status?: string | string[]; overdue?: boolean }): Promise<DataSubjectRequest[]> {
   try {
-    const res = await api.get('/api/dsr');
+    const query: Record<string, unknown> = {};
+    if (params?.status) query.status = Array.isArray(params.status) ? params.status.join(',') : params.status;
+    if (typeof params?.overdue === 'boolean') query.overdue = params.overdue;
+    const res = await api.get('/api/dsr', { params: query });
     return normalizeList(res.data);
   } catch (error: any) {
     if (error?.status === 404) return [];
@@ -80,9 +84,10 @@ export async function createDsr(payload: CreateDataSubjectRequestInput): Promise
 
 export async function updateDsrStatus(
   id: string,
-  status: DataSubjectRequestStatus
+  status: DataSubjectRequestStatus,
+  note?: string
 ): Promise<DataSubjectRequest> {
-  const res = await api.patch(`/api/dsr/${id}`, { status });
+  const res = await api.patch(`/api/dsr/${id}/status`, { status, note });
   return mapDsr(res.data);
 }
 

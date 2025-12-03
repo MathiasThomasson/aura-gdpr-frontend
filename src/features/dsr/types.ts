@@ -40,6 +40,7 @@ export type DataSubjectRequest = {
   description?: string | null;
   priority?: DataSubjectRequestPriority | null;
   events?: DataSubjectRequestEvent[];
+  is_overdue?: boolean;
 };
 
 export type CreateDataSubjectRequestInput = {
