@@ -115,33 +115,16 @@ const CookiesPage: React.FC = () => {
       );
     }
 
-    if (error) {
-      return (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          <div className="flex items-center justify-between gap-3">
-            <p>{error}</p>
-            <button
-              type="button"
-              className="text-xs font-semibold text-rose-800 underline"
-              onClick={() => refresh()}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (filtered.length === 0) {
-      return (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
-          <p className="font-semibold text-slate-900">No cookies match the current filters.</p>
-          <p className="text-slate-600">Adjust filters or create a new cookie entry.</p>
-        </div>
-      );
-    }
-
-    return <CookiesTable cookies={filtered} onSelect={handleSelect} />;
+    return (
+      <CookiesTable
+        cookies={filtered}
+        onSelect={handleSelect}
+        isLoading={loading}
+        isError={Boolean(error)}
+        errorMessage={error}
+        onRetry={refresh}
+      />
+    );
   };
 
   return (

@@ -23,7 +23,14 @@ export function useToms() {
       const data = await getAll();
       if (isMounted.current) setToms(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load TOMs.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setToms([]);
+          setError(null);
+        } else {
+          setError('Something went wrong while loading data. Please try again.');
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

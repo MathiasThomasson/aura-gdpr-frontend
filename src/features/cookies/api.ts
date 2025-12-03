@@ -48,26 +48,31 @@ Please review and adapt before publishing.
 }
 
 export async function getAll(): Promise<CookieItem[]> {
-  const res = await api.get('/cookies');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/cookies');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getOne(id: string): Promise<CookieItem> {
-  const res = await api.get(`/cookies/${id}`);
+  const res = await api.get(`/api/cookies/${id}`);
   return mapCookie(res.data);
 }
 
 export async function create(payload: Partial<CookieItem>): Promise<CookieItem> {
-  const res = await api.post('/cookies', payload);
+  const res = await api.post('/api/cookies', payload);
   return mapCookie(res.data);
 }
 
 export async function update(id: string, payload: Partial<CookieItem>): Promise<CookieItem> {
-  const res = await api.put(`/cookies/${id}`, payload);
+  const res = await api.put(`/api/cookies/${id}`, payload);
   return mapCookie(res.data);
 }
 
 export async function patch(id: string, payload: Partial<CookieItem>): Promise<CookieItem> {
-  const res = await api.patch(`/cookies/${id}`, payload);
+  const res = await api.patch(`/api/cookies/${id}`, payload);
   return mapCookie(res.data);
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { CookieItem } from '../types';
 import CookieRow from './CookieRow';
 
@@ -7,17 +8,32 @@ type Props = {
   onSelect: (cookie: CookieItem) => void;
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
 };
 
-const CookiesTable: React.FC<Props> = ({ cookies, onSelect, isLoading, isError }) => {
+const CookiesTable: React.FC<Props> = ({ cookies, onSelect, isLoading, isError, errorMessage, onRetry }) => {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading cookies...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">Failed to load cookies.</p>;
+    return (
+      <EmptyState
+        title="Unable to load cookies"
+        description={errorMessage || 'Something went wrong while loading data. Please try again.'}
+        actionLabel={onRetry ? 'Retry' : undefined}
+        onAction={onRetry}
+        className="bg-rose-50 border-rose-200"
+      />
+    );
   }
   if (cookies.length === 0) {
-    return <p className="text-sm text-muted-foreground">No cookies found for the selected filters.</p>;
+    return (
+      <EmptyState
+        title="No cookies yet"
+        description="Start by creating your first cookie entry to track web technologies and retention."
+      />
+    );
   }
 
   return (
