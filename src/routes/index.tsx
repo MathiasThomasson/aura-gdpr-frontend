@@ -68,6 +68,7 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Public marketing routes: no auth required. App routes under /app are protected via ProtectedRoute.
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
