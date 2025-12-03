@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { create, getAll, getOne, patch, update } from '../api';
 import { TaskItem } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export function useTasks() {
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +25,14 @@ export function useTasks() {
       const data = await getAll();
       if (isMounted.current) setTasks(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load tasks.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setTasks([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

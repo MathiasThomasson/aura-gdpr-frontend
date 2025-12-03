@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { RopaItem } from '../types';
 import RopaRow from './RopaRow';
 
@@ -7,17 +8,55 @@ type Props = {
   onSelect: (record: RopaItem) => void;
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
+  hasRecords?: boolean;
+  onCreate?: () => void;
 };
 
-const RopaTable: React.FC<Props> = ({ records, onSelect, isLoading, isError }) => {
+const RopaTable: React.FC<Props> = ({
+  records,
+  onSelect,
+  isLoading,
+  isError,
+  errorMessage,
+  onRetry,
+  hasRecords,
+  onCreate,
+}) => {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading records...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">Failed to load records.</p>;
+    return (
+      <EmptyState
+        title="Unable to load records"
+        description={errorMessage || 'Something went wrong while loading data. Please try again.'}
+        actionLabel={onRetry ? 'Retry' : undefined}
+        onAction={onRetry}
+        className="bg-rose-50 border-rose-200"
+      />
+    );
   }
   if (records.length === 0) {
-    return <p className="text-sm text-muted-foreground">No records found for the selected filters.</p>;
+    if (hasRecords) {
+      return (
+        <EmptyState
+          title="No records match these filters"
+          description="Try adjusting filters or add a new processing activity."
+          actionLabel="New record"
+          onAction={onCreate}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        title="No processing records yet"
+        description="Capture your first record of processing to maintain GDPR accountability."
+        actionLabel="New record"
+        onAction={onCreate}
+      />
+    );
   }
 
   return (

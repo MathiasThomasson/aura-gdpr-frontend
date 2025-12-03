@@ -18,26 +18,31 @@ const normalizeList = (payload: unknown): DocumentItem[] => {
 };
 
 export async function getAllDocuments(): Promise<DocumentItem[]> {
-  const res = await api.get('/documents');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/documents');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getDocument(id: string): Promise<DocumentItem> {
-  const res = await api.get(`/documents/${id}`);
+  const res = await api.get(`/api/documents/${id}`);
   return mapDocument(res.data);
 }
 
 export async function createDocument(payload: Omit<DocumentItem, 'id'>): Promise<DocumentItem> {
-  const res = await api.post('/documents', payload);
+  const res = await api.post('/api/documents', payload);
   return mapDocument(res.data);
 }
 
 export async function updateDocument(id: string, payload: Partial<DocumentItem>): Promise<DocumentItem> {
-  const res = await api.put(`/documents/${id}`, payload);
+  const res = await api.put(`/api/documents/${id}`, payload);
   return mapDocument(res.data);
 }
 
 export async function patchDocument(id: string, payload: Partial<DocumentItem>): Promise<DocumentItem> {
-  const res = await api.patch(`/documents/${id}`, payload);
+  const res = await api.patch(`/api/documents/${id}`, payload);
   return mapDocument(res.data);
 }

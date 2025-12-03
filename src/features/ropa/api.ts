@@ -18,26 +18,31 @@ const normalizeList = (payload: unknown): RopaItem[] => {
 };
 
 export async function getAllRopa(): Promise<RopaItem[]> {
-  const res = await api.get('/ropa');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/ropa');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getRopa(id: string): Promise<RopaItem> {
-  const res = await api.get(`/ropa/${id}`);
+  const res = await api.get(`/api/ropa/${id}`);
   return mapRopa(res.data);
 }
 
 export async function createRopa(payload: Omit<RopaItem, 'id'>): Promise<RopaItem> {
-  const res = await api.post('/ropa', payload);
+  const res = await api.post('/api/ropa', payload);
   return mapRopa(res.data);
 }
 
 export async function updateRopa(id: string, payload: Partial<RopaItem>): Promise<RopaItem> {
-  const res = await api.put(`/ropa/${id}`, payload);
+  const res = await api.put(`/api/ropa/${id}`, payload);
   return mapRopa(res.data);
 }
 
 export async function patchRopa(id: string, payload: Partial<RopaItem>): Promise<RopaItem> {
-  const res = await api.patch(`/ropa/${id}`, payload);
+  const res = await api.patch(`/api/ropa/${id}`, payload);
   return mapRopa(res.data);
 }

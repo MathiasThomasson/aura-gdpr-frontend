@@ -49,26 +49,31 @@ const normalizeList = (payload: unknown): IncidentItem[] => {
 };
 
 export async function getAll(): Promise<IncidentItem[]> {
-  const res = await api.get('/incidents');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/incidents');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getOne(id: string): Promise<IncidentItem> {
-  const res = await api.get(`/incidents/${id}`);
+  const res = await api.get(`/api/incidents/${id}`);
   return mapIncident(res.data);
 }
 
 export async function create(payload: Partial<IncidentItem>): Promise<IncidentItem> {
-  const res = await api.post('/incidents', payload);
+  const res = await api.post('/api/incidents', payload);
   return mapIncident(res.data);
 }
 
 export async function update(id: string, payload: Partial<IncidentItem>): Promise<IncidentItem> {
-  const res = await api.put(`/incidents/${id}`, payload);
+  const res = await api.put(`/api/incidents/${id}`, payload);
   return mapIncident(res.data);
 }
 
 export async function patch(id: string, payload: Partial<IncidentItem>): Promise<IncidentItem> {
-  const res = await api.patch(`/incidents/${id}`, payload);
+  const res = await api.patch(`/api/incidents/${id}`, payload);
   return mapIncident(res.data);
 }

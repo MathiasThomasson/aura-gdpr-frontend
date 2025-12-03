@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { create, getAll, getOne, patch, update } from '../api';
 import { IncidentItem, IncidentStatus } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export function useIncidents() {
   const [incidents, setIncidents] = useState<IncidentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +25,14 @@ export function useIncidents() {
       const data = await getAll();
       if (isMounted.current) setIncidents(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load incidents.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setIncidents([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

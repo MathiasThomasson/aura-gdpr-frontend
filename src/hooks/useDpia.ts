@@ -26,10 +26,15 @@ export const useDpia = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<DpiaListResponse>('/dpia');
+      const res = await api.get<DpiaListResponse>('/api/dpia');
       setData(res.data.items);
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to load DPIA list');
+      if (err?.status === 404) {
+        setData([]);
+        setError(null);
+        return;
+      }
+      setError('Something went wrong while loading data. Please try again.');
       setData([]);
     } finally {
       setLoading(false);
@@ -43,9 +48,9 @@ export const useDpia = () => {
   const saveDpia = useCallback(
     async (payload: DpiaPayload) => {
       if (payload.id) {
-        await api.patch(`/dpia/${payload.id}`, payload);
+        await api.patch(`/api/dpia/${payload.id}`, payload);
       } else {
-        await api.post('/dpia', payload);
+        await api.post('/api/dpia', payload);
       }
       await load();
     },

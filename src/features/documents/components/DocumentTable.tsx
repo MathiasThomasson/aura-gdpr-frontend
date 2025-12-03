@@ -1,24 +1,62 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { DocumentItem } from '../types';
 import DocumentRow from './DocumentRow';
-import DocumentStatusBadge from './DocumentStatusBadge';
 
 type Props = {
   documents: DocumentItem[];
   onSelect: (doc: DocumentItem) => void;
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
+  hasDocuments?: boolean;
+  onCreate?: () => void;
 };
 
-const DocumentTable: React.FC<Props> = ({ documents, onSelect, isLoading, isError }) => {
+const DocumentTable: React.FC<Props> = ({
+  documents,
+  onSelect,
+  isLoading,
+  isError,
+  errorMessage,
+  onRetry,
+  hasDocuments,
+  onCreate,
+}) => {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading documents...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">Failed to load documents.</p>;
+    return (
+      <EmptyState
+        title="Unable to load documents"
+        description={errorMessage || 'Something went wrong while loading data. Please try again.'}
+        actionLabel={onRetry ? 'Retry' : undefined}
+        onAction={onRetry}
+        className="bg-rose-50 border-rose-200"
+      />
+    );
   }
   if (documents.length === 0) {
-    return <p className="text-sm text-muted-foreground">No documents found for the selected filters.</p>;
+    if (hasDocuments) {
+      return (
+        <EmptyState
+          title="No documents match these filters"
+          description="Try adjusting filters or create a new document."
+          actionLabel="New document"
+          onAction={onCreate}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        title="No documents yet"
+        description="Start by creating your first GDPR document. Draft data processing agreements, privacy notices, and more."
+        actionLabel="New document"
+        onAction={onCreate}
+      />
+    );
   }
 
   return (

@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { Skeleton } from '@/components/ui/skeleton';
 import IncidentFiltersBar from './components/IncidentFiltersBar';
 import IncidentsTable from './components/IncidentsTable';
@@ -19,6 +20,7 @@ const IncidentsPage: React.FC = () => {
   const [status, setStatus] = React.useState<StatusFilter>('all');
   const [selected, setSelected] = React.useState<IncidentItem | null>(null);
   const [mode, setMode] = React.useState<'view' | 'create' | 'edit'>('view');
+  const hasAnyIncidents = incidents.length > 0;
 
   const filtered = React.useMemo(() => {
     return incidents.filter((incident) => {
@@ -105,27 +107,23 @@ const IncidentsPage: React.FC = () => {
 
     if (error) {
       return (
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          <div className="flex items-center justify-between gap-3">
-            <p>{error}</p>
-            <button
-              type="button"
-              className="text-xs font-semibold text-rose-800 underline"
-              onClick={() => refresh()}
-            >
-              Retry
-            </button>
-          </div>
-        </div>
+        <EmptyState
+          title="Unable to load incidents"
+          description={error}
+          actionLabel="Retry"
+          onAction={() => refresh()}
+          className="bg-rose-50 border-rose-200"
+        />
       );
     }
 
     if (filtered.length === 0) {
+      const title = hasAnyIncidents ? 'No incidents match these filters' : 'No incidents yet';
+      const description = hasAnyIncidents
+        ? 'Try adjusting filters or open a new incident to get started.'
+        : 'Log your first incident to track investigations and response steps.';
       return (
-        <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-700">
-          <p className="font-semibold text-slate-900">No incidents match the current filters.</p>
-          <p className="text-slate-600">Try adjusting filters or create a new incident to get started.</p>
-        </div>
+        <EmptyState title={title} description={description} actionLabel="Log incident" onAction={handleNew} />
       );
     }
 

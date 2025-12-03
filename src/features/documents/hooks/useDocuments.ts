@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createDocument, getAllDocuments, getDocument, patchDocument, updateDocument } from '../api';
 import type { DocumentItem } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export function useDocuments() {
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +25,14 @@ export function useDocuments() {
       const data = await getAllDocuments();
       if (isMounted.current) setDocuments(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load documents.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setDocuments([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

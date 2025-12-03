@@ -18,6 +18,7 @@ const DocumentsPage: React.FC = () => {
   const [type, setType] = React.useState<FilterType>('all');
   const [selected, setSelected] = React.useState<DocumentItem | null>(null);
   const [drawerMode, setDrawerMode] = React.useState<'view' | 'create'>('view');
+  const hasAnyDocuments = documents.length > 0;
 
   const filtered = React.useMemo(() => {
     return documents.filter((doc) => {
@@ -119,8 +120,16 @@ const DocumentsPage: React.FC = () => {
         onTypeChange={setType}
       />
 
-      <DocumentTable documents={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      <DocumentTable
+        documents={filtered}
+        onSelect={handleSelect}
+        isLoading={loading}
+        isError={Boolean(error)}
+        errorMessage={error}
+        onRetry={refresh}
+        hasDocuments={hasAnyDocuments}
+        onCreate={handleCreateBlank}
+      />
 
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
         <div className="flex items-start gap-2">

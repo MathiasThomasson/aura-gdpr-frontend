@@ -15,6 +15,7 @@ const DpiaPage: React.FC = () => {
   const [risk, setRisk] = React.useState<RiskLevel>('all');
   const [selected, setSelected] = React.useState<DpiaItem | null>(null);
   const [mode, setMode] = React.useState<'view' | 'create' | 'edit'>('view');
+  const hasAnyDpias = dpias.length > 0;
 
   const filtered = React.useMemo(() => {
     return dpias.filter((dpia) => {
@@ -126,8 +127,16 @@ const DpiaPage: React.FC = () => {
         </ul>
       </div>
 
-      <DpiaTable dpias={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      <DpiaTable
+        dpias={filtered}
+        onSelect={handleSelect}
+        isLoading={loading}
+        isError={Boolean(error)}
+        errorMessage={error}
+        onRetry={refresh}
+        hasDpias={hasAnyDpias}
+        onCreate={handleNewBlank}
+      />
 
       <DpiaDetailsDrawer
         dpia={selected}

@@ -38,14 +38,24 @@ export const useRiskMatrix = () => {
       setLoading(true);
       setError(null);
 
+      const safeGet = async <T>(url: string): Promise<T | null> => {
+        try {
+          const res = await api.get<T>(url);
+          return res.data;
+        } catch (err: any) {
+          if (err?.status === 404) return null;
+          throw err;
+        }
+      };
+
       const [dpiaRes, incidentRes, projectRes] = await Promise.all([
-        api.get<DpiaResponse>('/dpia'),
-        api.get<IncidentResponse>('/incidents'),
-        api.get<ProjectResponse>('/projects'),
+        safeGet<DpiaResponse>('/api/dpia'),
+        safeGet<IncidentResponse>('/api/incidents'),
+        safeGet<ProjectResponse>('/api/projects'),
       ]);
 
       const dpiaItems: RiskItem[] =
-        dpiaRes.data.items?.map((d) => ({
+        dpiaRes?.items?.map((d) => ({
           id: d.id,
           type: 'dpia' as const,
           title: d.title,
@@ -55,7 +65,7 @@ export const useRiskMatrix = () => {
         })) ?? [];
 
       const incidentItems: RiskItem[] =
-        incidentRes.data.items?.map((i) => {
+        incidentRes?.items?.map((i) => {
           const sev = (i.severity || '').toString().toLowerCase();
           const score = sev === 'critical' || sev === 'high' ? 16 : sev === 'medium' ? 9 : 4;
           const risk = normalizeRisk(score);
@@ -70,7 +80,7 @@ export const useRiskMatrix = () => {
         }) ?? [];
 
       const projectItems: RiskItem[] =
-        projectRes.data.items?.map((p) => ({
+        projectRes?.items?.map((p) => ({
           id: p.id,
           type: 'project' as const,
           title: p.name,
@@ -81,7 +91,7 @@ export const useRiskMatrix = () => {
 
       setData([...dpiaItems, ...incidentItems, ...projectItems]);
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to load risks');
+      setError('Something went wrong while loading data. Please try again.');
       setData([]);
     } finally {
       setLoading(false);

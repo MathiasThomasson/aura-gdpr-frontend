@@ -20,7 +20,7 @@ const DsrPortalPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post('/dsr', { email, type, description });
+      const res = await api.post('/api/dsr', { email, type, description });
       const id = res.data?.id ?? 'N/A';
       setTicketId(id);
     } catch (err: any) {

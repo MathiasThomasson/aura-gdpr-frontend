@@ -92,7 +92,15 @@ api.interceptors.response.use(
     }
 
     const message = error?.response?.data?.message ?? error?.message ?? 'Unknown error';
-    return Promise.reject(new Error(message));
+    const normalizedError = new Error(message) as Error & {
+      status?: number;
+      data?: unknown;
+      response?: unknown;
+    };
+    normalizedError.status = status;
+    normalizedError.data = error?.response?.data;
+    normalizedError.response = error?.response;
+    return Promise.reject(normalizedError);
   }
 );
 

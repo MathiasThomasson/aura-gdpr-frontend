@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRopa, getAllRopa, getRopa, patchRopa, updateRopa } from '../api';
 import type { RopaItem } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export function useRopa() {
   const [records, setRecords] = useState<RopaItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +25,14 @@ export function useRopa() {
       const data = await getAllRopa();
       if (isMounted.current) setRecords(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load ROPA records.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setRecords([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

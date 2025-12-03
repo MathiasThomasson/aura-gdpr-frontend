@@ -30,12 +30,17 @@ export const useTasks = (status?: TaskStatus) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<TasksResponse>('/tasks', {
+      const res = await api.get<TasksResponse>('/api/tasks', {
         params: status ? { status } : undefined,
       });
       setData(res.data.items);
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to load tasks');
+      if (err?.status === 404) {
+        setData([]);
+        setError(null);
+        return;
+      }
+      setError('Something went wrong while loading data. Please try again.');
       setData([]);
     } finally {
       setLoading(false);

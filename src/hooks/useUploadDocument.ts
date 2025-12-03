@@ -16,7 +16,7 @@ export const useUploadDocument = () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await api.post<UploadResponse>('/documents/upload', formData, {
+      const res = await api.post<UploadResponse>('/api/documents/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data.document;

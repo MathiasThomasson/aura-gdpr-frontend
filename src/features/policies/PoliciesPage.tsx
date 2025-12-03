@@ -22,6 +22,7 @@ const PoliciesPage: React.FC = () => {
   const [lastAiInput, setLastAiInput] = React.useState<GeneratePolicyInput | null>(null);
   const [aiError, setAiError] = React.useState<string | null>(null);
   const [showAiDraftNote, setShowAiDraftNote] = React.useState(false);
+  const hasAnyPolicies = policies.length > 0;
 
   const handleCloseDrawer = () => {
     setSelected(null);
@@ -182,8 +183,16 @@ const PoliciesPage: React.FC = () => {
         onTypeChange={setType}
       />
 
-      <PolicyTable policies={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      <PolicyTable
+        policies={filtered}
+        onSelect={handleSelect}
+        isLoading={loading}
+        isError={Boolean(error)}
+        errorMessage={error}
+        onRetry={refresh}
+        hasPolicies={hasAnyPolicies}
+        onCreate={handleCreateBlank}
+      />
 
       <PolicyDetailsDrawer
         policy={selected}

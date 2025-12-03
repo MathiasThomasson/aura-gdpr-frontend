@@ -29,7 +29,7 @@ export const useDocuments = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await api.get<DocumentsResponse>('/documents');
+      const res = await api.get<DocumentsResponse>('/api/documents');
       const raw = res?.data as unknown;
       const items = Array.isArray(raw)
         ? raw
@@ -40,7 +40,12 @@ export const useDocuments = () => {
             : [];
       setData(items);
     } catch (err: any) {
-      setError(err?.message ?? 'Failed to load documents');
+      if (err?.status === 404) {
+        setData([]);
+        setError(null);
+        return;
+      }
+      setError('Something went wrong while loading data. Please try again.');
       setData([]);
     } finally {
       setLoading(false);

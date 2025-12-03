@@ -12,6 +12,7 @@ import NewRequestModal from '@/components/dsr/NewRequestModal';
 import PublicDsrSettings from '@/components/dsr/PublicDsrSettings';
 import { useSystemStatus } from '@/contexts/SystemContext';
 import { useUserProgress } from '@/contexts/UserProgressContext';
+import EmptyState from '@/components/EmptyState';
 
 type StatusFilter = 'all' | 'open' | 'completed' | 'rejected';
 
@@ -56,6 +57,7 @@ const DSRPage: React.FC = () => {
   const [selectedDsr, setSelectedDsr] = React.useState<DataSubjectRequest | null>(null);
   const [drawerError, setDrawerError] = React.useState<string | null>(null);
   const [isUpdating, setIsUpdating] = React.useState(false);
+  const hasAnyRequests = data.length > 0;
 
   const { createRequest, loading: creating, error: createError } = useCreateDSR({
     onSuccess: async () => {
@@ -184,9 +186,26 @@ const DSRPage: React.FC = () => {
 
         <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
           {loading && <p className="text-sm text-muted-foreground">Loading requests...</p>}
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <EmptyState
+              title="Unable to load requests"
+              description={error}
+              actionLabel="Retry"
+              onAction={reload}
+              className="bg-rose-50 border-rose-200"
+            />
+          )}
           {!loading && !error && filteredData.length === 0 && (
-            <p className="text-sm text-muted-foreground">No data subject requests yet.</p>
+            <EmptyState
+              title={hasAnyRequests ? 'No requests match these filters' : 'No data subject requests yet'}
+              description={
+                hasAnyRequests
+                  ? 'Adjust filters or add a new request to keep this list moving.'
+                  : 'When individuals submit requests, they will appear here. You can also create internal requests manually.'
+              }
+              actionLabel="New request"
+              onAction={() => setIsModalOpen(true)}
+            />
           )}
 
           {!loading && filteredData.length > 0 && (

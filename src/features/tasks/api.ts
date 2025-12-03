@@ -40,26 +40,31 @@ const normalizeList = (payload: unknown): TaskItem[] => {
 };
 
 export async function getAll(): Promise<TaskItem[]> {
-  const res = await api.get('/tasks');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/tasks');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getOne(id: string): Promise<TaskItem> {
-  const res = await api.get(`/tasks/${id}`);
+  const res = await api.get(`/api/tasks/${id}`);
   return mapTask(res.data);
 }
 
 export async function create(payload: Partial<TaskItem>): Promise<TaskItem> {
-  const res = await api.post('/tasks', payload);
+  const res = await api.post('/api/tasks', payload);
   return mapTask(res.data);
 }
 
 export async function update(id: string, payload: Partial<TaskItem>): Promise<TaskItem> {
-  const res = await api.put(`/tasks/${id}`, payload);
+  const res = await api.put(`/api/tasks/${id}`, payload);
   return mapTask(res.data);
 }
 
 export async function patch(id: string, payload: Partial<TaskItem>): Promise<TaskItem> {
-  const res = await api.patch(`/tasks/${id}`, payload);
+  const res = await api.patch(`/api/tasks/${id}`, payload);
   return mapTask(res.data);
 }

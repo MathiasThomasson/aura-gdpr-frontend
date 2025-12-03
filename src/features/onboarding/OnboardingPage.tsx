@@ -102,7 +102,7 @@ const OnboardingPage: React.FC = () => {
   const handleDsrContact = async () => {
     setBusyStep('dsr');
     try {
-      await api.post('/dsr/contact', { email: dsrContact });
+      await api.post('/api/dsr/contact', { email: dsrContact });
       toast({
         title: 'DSR contact saved',
         description: 'Primary DSR contact configured.',
@@ -123,7 +123,7 @@ const OnboardingPage: React.FC = () => {
   const handleGeneratePolicies = async () => {
     setPolicyStatus('loading');
     try {
-      await api.post('/policies/ai-generate', { quickstart: true });
+      await api.post('/api/policies/ai-generate', { quickstart: true });
       await markComplete('policyGenerated');
       analytics('policy_ai_generated');
       toast({

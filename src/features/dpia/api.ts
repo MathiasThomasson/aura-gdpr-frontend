@@ -23,26 +23,31 @@ const normalizeList = (payload: unknown): DpiaItem[] => {
 };
 
 export async function getAllDpia(): Promise<DpiaItem[]> {
-  const res = await api.get('/dpia');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/dpia');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getDpia(id: string): Promise<DpiaItem> {
-  const res = await api.get(`/dpia/${id}`);
+  const res = await api.get(`/api/dpia/${id}`);
   return mapDpia(res.data);
 }
 
 export async function createDpia(payload: Omit<DpiaItem, 'id'>): Promise<DpiaItem> {
-  const res = await api.post('/dpia', payload);
+  const res = await api.post('/api/dpia', payload);
   return mapDpia(res.data);
 }
 
 export async function updateDpia(id: string, payload: Partial<DpiaItem>): Promise<DpiaItem> {
-  const res = await api.put(`/dpia/${id}`, payload);
+  const res = await api.put(`/api/dpia/${id}`, payload);
   return mapDpia(res.data);
 }
 
 export async function patchDpia(id: string, payload: Partial<DpiaItem>): Promise<DpiaItem> {
-  const res = await api.patch(`/dpia/${id}`, payload);
+  const res = await api.patch(`/api/dpia/${id}`, payload);
   return mapDpia(res.data);
 }

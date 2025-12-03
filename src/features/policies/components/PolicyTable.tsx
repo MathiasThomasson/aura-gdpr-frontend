@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { PolicyItem } from '../types';
 import PolicyRow from './PolicyRow';
 
@@ -7,17 +8,55 @@ type Props = {
   onSelect: (policy: PolicyItem) => void;
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
+  hasPolicies?: boolean;
+  onCreate?: () => void;
 };
 
-const PolicyTable: React.FC<Props> = ({ policies, onSelect, isLoading, isError }) => {
+const PolicyTable: React.FC<Props> = ({
+  policies,
+  onSelect,
+  isLoading,
+  isError,
+  errorMessage,
+  onRetry,
+  hasPolicies,
+  onCreate,
+}) => {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading policies...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">Failed to load policies.</p>;
+    return (
+      <EmptyState
+        title="Unable to load policies"
+        description={errorMessage || 'Something went wrong while loading data. Please try again.'}
+        actionLabel={onRetry ? 'Retry' : undefined}
+        onAction={onRetry}
+        className="bg-rose-50 border-rose-200"
+      />
+    );
   }
   if (policies.length === 0) {
-    return <p className="text-sm text-muted-foreground">No policies found for the selected filters.</p>;
+    if (hasPolicies) {
+      return (
+        <EmptyState
+          title="No policies match these filters"
+          description="Try adjusting filters or start a new policy."
+          actionLabel="New policy"
+          onAction={onCreate}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        title="No policies yet"
+        description="Use this space to manage internal and external GDPR policies. Create your first policy to get started."
+        actionLabel="New policy"
+        onAction={onCreate}
+      />
+    );
   }
 
   return (

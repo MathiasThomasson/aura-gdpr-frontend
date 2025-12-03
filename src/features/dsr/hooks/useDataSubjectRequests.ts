@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createDsr, getDsrs, updateDsrStatus, getDsr } from '../api';
 import { CreateDataSubjectRequestInput, DataSubjectRequest, DataSubjectRequestStatus } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export const useDataSubjectRequests = () => {
   const [data, setData] = useState<DataSubjectRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,8 +27,13 @@ export const useDataSubjectRequests = () => {
       }
     } catch (err: any) {
       if (isMounted.current) {
-        setError(err?.message ?? 'Failed to load data subject requests.');
-        setData([]);
+        if (err?.status === 404) {
+          setData([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+          setData([]);
+        }
       }
     } finally {
       if (isMounted.current) setLoading(false);

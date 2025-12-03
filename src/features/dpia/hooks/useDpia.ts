@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createDpia, getAllDpia, getDpia, patchDpia, updateDpia } from '../api';
 import type { DpiaItem } from '../types';
 
+const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
+
 export function useDpia() {
   const [dpias, setDpias] = useState<DpiaItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -23,7 +25,14 @@ export function useDpia() {
       const data = await getAllDpia();
       if (isMounted.current) setDpias(data);
     } catch (err: any) {
-      if (isMounted.current) setError(err?.message ?? 'Failed to load DPIA items.');
+      if (isMounted.current) {
+        if (err?.status === 404) {
+          setDpias([]);
+          setError(null);
+        } else {
+          setError(loadErrorMessage);
+        }
+      }
     } finally {
       if (isMounted.current) setLoading(false);
     }

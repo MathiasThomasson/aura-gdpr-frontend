@@ -1,4 +1,5 @@
 import React from 'react';
+import EmptyState from '@/components/EmptyState';
 import { DpiaItem } from '../types';
 import DpiaRow from './DpiaRow';
 
@@ -7,17 +8,55 @@ type Props = {
   onSelect: (dpia: DpiaItem) => void;
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
+  onRetry?: () => void;
+  hasDpias?: boolean;
+  onCreate?: () => void;
 };
 
-const DpiaTable: React.FC<Props> = ({ dpias, onSelect, isLoading, isError }) => {
+const DpiaTable: React.FC<Props> = ({
+  dpias,
+  onSelect,
+  isLoading,
+  isError,
+  errorMessage,
+  onRetry,
+  hasDpias,
+  onCreate,
+}) => {
   if (isLoading) {
     return <p className="text-sm text-muted-foreground">Loading DPIAs...</p>;
   }
   if (isError) {
-    return <p className="text-sm text-red-600">Failed to load DPIAs.</p>;
+    return (
+      <EmptyState
+        title="Unable to load DPIAs"
+        description={errorMessage || 'Something went wrong while loading data. Please try again.'}
+        actionLabel={onRetry ? 'Retry' : undefined}
+        onAction={onRetry}
+        className="bg-rose-50 border-rose-200"
+      />
+    );
   }
   if (dpias.length === 0) {
-    return <p className="text-sm text-muted-foreground">No DPIAs found for the selected filters.</p>;
+    if (hasDpias) {
+      return (
+        <EmptyState
+          title="No DPIAs match these filters"
+          description="Adjust filters or start a new assessment."
+          actionLabel="New DPIA"
+          onAction={onCreate}
+        />
+      );
+    }
+    return (
+      <EmptyState
+        title="No DPIAs yet"
+        description="Create your first DPIA to assess high-risk processing and capture mitigation actions."
+        actionLabel="New DPIA"
+        onAction={onCreate}
+      />
+    );
   }
 
   return (

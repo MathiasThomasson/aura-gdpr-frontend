@@ -59,17 +59,22 @@ const normalizePublicLink = (payload: any): PublicDsrLink => {
 };
 
 export async function getDsrs(): Promise<DataSubjectRequest[]> {
-  const res = await api.get('/dsr');
-  return normalizeList(res.data);
+  try {
+    const res = await api.get('/api/dsr');
+    return normalizeList(res.data);
+  } catch (error: any) {
+    if (error?.status === 404) return [];
+    throw error;
+  }
 }
 
 export async function getDsr(id: string): Promise<DataSubjectRequest> {
-  const res = await api.get(`/dsr/${id}`);
+  const res = await api.get(`/api/dsr/${id}`);
   return mapDsr(res.data);
 }
 
 export async function createDsr(payload: CreateDataSubjectRequestInput): Promise<DataSubjectRequest> {
-  const res = await api.post('/dsr', payload);
+  const res = await api.post('/api/dsr', payload);
   return mapDsr(res.data);
 }
 
@@ -77,26 +82,26 @@ export async function updateDsrStatus(
   id: string,
   status: DataSubjectRequestStatus
 ): Promise<DataSubjectRequest> {
-  const res = await api.patch(`/dsr/${id}`, { status });
+  const res = await api.patch(`/api/dsr/${id}`, { status });
   return mapDsr(res.data);
 }
 
 export async function createPublicDsr(tenantSlug: string, payload: unknown): Promise<void> {
   if (!tenantSlug) throw new Error('Missing tenant identifier.');
-  await api.post(`/public/dsr/${tenantSlug}`, payload);
+  await api.post(`/api/public/dsr/${tenantSlug}`, payload);
 }
 
 export async function getPublicDsrLink(): Promise<PublicDsrLink> {
-  const res = await api.get('/dsr/public-link');
+  const res = await api.get('/api/dsr/public-link');
   return normalizePublicLink(res.data);
 }
 
 export async function enablePublicDsrLink(): Promise<PublicDsrLink> {
-  const res = await api.post('/dsr/public-link/enable');
+  const res = await api.post('/api/dsr/public-link/enable');
   return normalizePublicLink(res.data);
 }
 
 export async function disablePublicDsrLink(): Promise<PublicDsrLink> {
-  const res = await api.post('/dsr/public-link/disable');
+  const res = await api.post('/api/dsr/public-link/disable');
   return normalizePublicLink(res.data);
 }

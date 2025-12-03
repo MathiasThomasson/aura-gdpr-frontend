@@ -16,6 +16,7 @@ const RopaPage: React.FC = () => {
   const [owner, setOwner] = React.useState<OwnerFilter>('all');
   const [selected, setSelected] = React.useState<RopaItem | null>(null);
   const [mode, setMode] = React.useState<'view' | 'create' | 'edit'>('view');
+  const hasAnyRecords = records.length > 0;
 
   const owners = React.useMemo(() => Array.from(new Set(records.map((r) => r.owner))), [records]);
 
@@ -103,8 +104,16 @@ const RopaPage: React.FC = () => {
         </ul>
       </div>
 
-      <RopaTable records={filtered} onSelect={handleSelect} isLoading={loading} isError={Boolean(error)} />
-      {error && <p className="text-sm text-rose-600">{error}</p>}
+      <RopaTable
+        records={filtered}
+        onSelect={handleSelect}
+        isLoading={loading}
+        isError={Boolean(error)}
+        errorMessage={error}
+        onRetry={refresh}
+        hasRecords={hasAnyRecords}
+        onCreate={handleNew}
+      />
 
       <RopaDetailsDrawer
         record={selected}
