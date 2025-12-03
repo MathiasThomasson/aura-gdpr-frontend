@@ -97,14 +97,19 @@ const DpiaPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">DPIA</h1>
-          <p className="text-sm text-slate-600">
-            Manage your Data Protection Impact Assessments for high-risk processing activities.
-          </p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">DPIA</h1>
+            <p className="text-sm text-slate-600">
+              Create and maintain Data Protection Impact Assessments (DPIA) for high-risk processing activities.
+            </p>
+            <p className="text-sm text-slate-600">
+              Use this page to capture risks, mitigation actions, and approval history for each assessment.
+            </p>
+          </div>
+          <NewDpiaMenu onNewBlank={handleNewBlank} onTemplateSelect={handleNewFromTemplate} />
         </div>
-        <NewDpiaMenu onNewBlank={handleNewBlank} onTemplateSelect={handleNewFromTemplate} />
       </div>
 
       <DpiaFiltersBar
@@ -116,7 +121,7 @@ const DpiaPage: React.FC = () => {
         onRiskChange={setRisk}
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">DPIA guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>A Data Protection Impact Assessment evaluates high-risk processing.</li>
@@ -127,16 +132,18 @@ const DpiaPage: React.FC = () => {
         </ul>
       </div>
 
-      <DpiaTable
-        dpias={filtered}
-        onSelect={handleSelect}
-        isLoading={loading}
-        isError={Boolean(error)}
-        errorMessage={error}
-        onRetry={refresh}
-        hasDpias={hasAnyDpias}
-        onCreate={handleNewBlank}
-      />
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <DpiaTable
+          dpias={filtered}
+          onSelect={handleSelect}
+          isLoading={loading}
+          isError={Boolean(error)}
+          errorMessage={error}
+          onRetry={refresh}
+          hasDpias={hasAnyDpias}
+          onCreate={handleNewBlank}
+        />
+      </div>
 
       <DpiaDetailsDrawer
         dpia={selected}

@@ -119,6 +119,16 @@ const DSRPage: React.FC = () => {
   return (
     <>
       <div className="space-y-6 p-6">
+        <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">Data Subject Requests</h1>
+            <p className="text-sm text-muted-foreground">Track and respond to Data Subject Requests (DSR) end-to-end.</p>
+            <p className="text-sm text-muted-foreground">
+              Use this page to register new requests, manage deadlines, and keep a full history of actions.
+            </p>
+          </div>
+        </div>
+
         <PageInfoBox
           title="Data Subject Requests"
           description="Track and manage GDPR data subject requests such as access, erasure, rectification, and objection."
@@ -126,11 +136,11 @@ const DSRPage: React.FC = () => {
 
         <PublicDsrSettings />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
           <h3 className="text-sm font-semibold text-slate-900">DSR guidance</h3>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
             <li>A Data Subject Request lets an individual exercise their privacy rights.</li>
-            <li>Workflow: Received → Verification → Investigation → Completed.</li>
+            <li>Workflow: Received -&gt; Verification -&gt; Investigation -&gt; Completed.</li>
             <li>30-day rule: respond and close within 30 days unless extended.</li>
             <li>Create a new DSR with the New Request button and capture the requester details.</li>
             <li>Results are stored in this list and inside each request timeline.</li>
@@ -184,7 +194,7 @@ const DSRPage: React.FC = () => {
           </div>
         )}
 
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm">
           {loading && <p className="text-sm text-muted-foreground">Loading requests...</p>}
           {error && (
             <EmptyState

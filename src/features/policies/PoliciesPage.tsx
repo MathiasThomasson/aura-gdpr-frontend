@@ -141,17 +141,24 @@ const PoliciesPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Policies</h1>
-          <p className="text-sm text-slate-600">Manage your GDPR-related policies and keep them up to date.</p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Policies</h1>
+            <p className="text-sm text-slate-600">
+              Manage internal and external policies, such as privacy notices and data processing agreements.
+            </p>
+            <p className="text-sm text-slate-600">
+              Draft or update policies quickly and keep a single source of truth for your organization.
+            </p>
+          </div>
+          <NewPolicyMenu
+            onNewBlank={handleCreateBlank}
+            onGenerateWithAi={handleGenerateWithAi}
+            aiGenerating={aiGenerating}
+            aiError={aiError}
+          />
         </div>
-        <NewPolicyMenu
-          onNewBlank={handleCreateBlank}
-          onGenerateWithAi={handleGenerateWithAi}
-          aiGenerating={aiGenerating}
-          aiError={aiError}
-        />
       </div>
       {aiError && (
         <p className="text-sm text-rose-600" role="alert">
@@ -164,7 +171,7 @@ const PoliciesPage: React.FC = () => {
         description="Centralize policy creation, reviews, and publication. AI-assisted drafts will help you ship faster."
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">Policies guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>Internal policies guide staff; public-facing policies inform customers.</li>
@@ -174,25 +181,27 @@ const PoliciesPage: React.FC = () => {
         </ul>
       </div>
 
-      <PolicyFiltersBar
-        search={search}
-        status={status}
-        type={type}
-        onSearch={setSearch}
-        onStatusChange={setStatus}
-        onTypeChange={setType}
-      />
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+        <PolicyFiltersBar
+          search={search}
+          status={status}
+          type={type}
+          onSearch={setSearch}
+          onStatusChange={setStatus}
+          onTypeChange={setType}
+        />
 
-      <PolicyTable
-        policies={filtered}
-        onSelect={handleSelect}
-        isLoading={loading}
-        isError={Boolean(error)}
-        errorMessage={error}
-        onRetry={refresh}
-        hasPolicies={hasAnyPolicies}
-        onCreate={handleCreateBlank}
-      />
+        <PolicyTable
+          policies={filtered}
+          onSelect={handleSelect}
+          isLoading={loading}
+          isError={Boolean(error)}
+          errorMessage={error}
+          onRetry={refresh}
+          hasPolicies={hasAnyPolicies}
+          onCreate={handleCreateBlank}
+        />
+      </div>
 
       <PolicyDetailsDrawer
         policy={selected}

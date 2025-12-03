@@ -14,17 +14,25 @@ type SystemContextValue = {
   refreshVersion: () => Promise<void>;
   demoMode: boolean;
   isOffline: boolean;
+  tenantPlan: string | null;
+  isTestTenant: boolean;
+  isTenantStatusLoading: boolean;
+  refreshTenantStatus: () => Promise<void>;
 };
 
 const SystemContext = createContext<SystemContextValue | undefined>(undefined);
 
 const defaultVersion: VersionInfo | null = null;
+const defaultTenantPlan = null;
 
 export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(defaultVersion);
   const [isVersionLoading, setIsVersionLoading] = useState<boolean>(false);
+  const [tenantPlan, setTenantPlan] = useState<string | null>(defaultTenantPlan);
+  const [isTestTenant, setIsTestTenant] = useState<boolean>(false);
+  const [isTenantStatusLoading, setIsTenantStatusLoading] = useState<boolean>(false);
   const [isOffline, setIsOffline] = useState<boolean>(typeof navigator !== 'undefined' ? !navigator.onLine : false);
 
   const demoMode = useMemo(() => {
@@ -49,6 +57,24 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [isAuthenticated]);
 
+  const refreshTenantStatus = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setIsTenantStatusLoading(true);
+    try {
+      const response = await api.get<{ plan?: string; is_test_tenant?: boolean }>('/api/system/tenant-status');
+      const nextPlan = response.data?.plan ?? null;
+      const nextIsTest = Boolean(response.data?.is_test_tenant);
+      setTenantPlan(nextPlan);
+      setIsTestTenant(nextIsTest);
+    } catch (err) {
+      // keep previous values to avoid blocking the UI
+      setTenantPlan((prev) => prev);
+      setIsTestTenant((prev) => prev);
+    } finally {
+      setIsTenantStatusLoading(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
@@ -63,13 +89,28 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (isAuthenticated) {
       refreshVersion();
+      refreshTenantStatus();
     } else {
       setVersionInfo(defaultVersion);
+      setTenantPlan(defaultTenantPlan);
+      setIsTestTenant(false);
     }
-  }, [isAuthenticated, refreshVersion]);
+  }, [isAuthenticated, refreshTenantStatus, refreshVersion]);
 
   return (
-    <SystemContext.Provider value={{ versionInfo, isVersionLoading, refreshVersion, demoMode, isOffline }}>
+    <SystemContext.Provider
+      value={{
+        versionInfo,
+        isVersionLoading,
+        refreshVersion,
+        demoMode,
+        isOffline,
+        tenantPlan,
+        isTestTenant,
+        isTenantStatusLoading,
+        refreshTenantStatus,
+      }}
+    >
       {children}
     </SystemContext.Provider>
   );

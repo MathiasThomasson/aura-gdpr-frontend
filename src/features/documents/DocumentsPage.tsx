@@ -86,14 +86,17 @@ const DocumentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Documents</h1>
-          <p className="text-sm text-slate-600">
-            Manage all your GDPR-related documents, policies, and agreements in one place.
-          </p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Documents</h1>
+            <p className="text-sm text-slate-600">Store and manage all GDPR-related documents in one place.</p>
+            <p className="text-sm text-slate-600">
+              Upload existing documents or generate new ones with AI (depending on your plan).
+            </p>
+          </div>
+          <NewDocumentMenu onNewBlank={handleCreateBlank} onTemplateSelect={handleCreateFromTemplate} />
         </div>
-        <NewDocumentMenu onNewBlank={handleCreateBlank} onTemplateSelect={handleCreateFromTemplate} />
       </div>
 
       <PageInfoBox
@@ -101,7 +104,7 @@ const DocumentsPage: React.FC = () => {
         description="Centralize policies, agreements, and guidelines. Future AI assistance will help you draft, review, and publish faster."
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">Documents guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>Use this space to store GDPR evidence, templates, and signed agreements.</li>
@@ -111,25 +114,27 @@ const DocumentsPage: React.FC = () => {
         </ul>
       </div>
 
-      <DocumentFiltersBar
-        search={search}
-        status={status}
-        type={type}
-        onSearch={setSearch}
-        onStatusChange={setStatus}
-        onTypeChange={setType}
-      />
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+        <DocumentFiltersBar
+          search={search}
+          status={status}
+          type={type}
+          onSearch={setSearch}
+          onStatusChange={setStatus}
+          onTypeChange={setType}
+        />
 
-      <DocumentTable
-        documents={filtered}
-        onSelect={handleSelect}
-        isLoading={loading}
-        isError={Boolean(error)}
-        errorMessage={error}
-        onRetry={refresh}
-        hasDocuments={hasAnyDocuments}
-        onCreate={handleCreateBlank}
-      />
+        <DocumentTable
+          documents={filtered}
+          onSelect={handleSelect}
+          isLoading={loading}
+          isError={Boolean(error)}
+          errorMessage={error}
+          onRetry={refresh}
+          hasDocuments={hasAnyDocuments}
+          onCreate={handleCreateBlank}
+        />
+      </div>
 
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
         <div className="flex items-start gap-2">

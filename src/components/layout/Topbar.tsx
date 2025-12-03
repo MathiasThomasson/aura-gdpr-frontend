@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import useNotifications from '@/features/notifications/hooks/useNotifications';
+import { useSystemStatus } from '@/contexts/SystemContext';
 
 type TopbarProps = {
   onMenuClick?: () => void;
@@ -51,8 +52,6 @@ const PAGE_TITLES: Record<string, string> = {
   '/app/notifications': 'Notifications',
 };
 
-const currentPlan = { type: 'pro', trialDaysLeft: 0 };
-
 const getInitials = (name?: string) => {
   if (!name) return 'AU';
   const parts = name.trim().split(' ');
@@ -63,14 +62,14 @@ const getInitials = (name?: string) => {
 const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onAskAura }) => {
   const { user, logout } = useAuth() as { user: AuthUser | null; logout: () => void };
   const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { tenantPlan, isTestTenant } = useSystemStatus();
   const navigate = useNavigate();
   const location = useLocation();
 
   const displayName = user?.name || user?.email || 'AURA User';
   const role = user?.role ? user.role : '';
   const tenantName = user?.tenantName || 'Acme Privacy Ltd.';
-  const planLabel =
-    currentPlan.trialDaysLeft > 0 ? `Free trial - ${currentPlan.trialDaysLeft} days left` : 'Pro plan';
+  const planLabel = tenantPlan ? `${tenantPlan.charAt(0).toUpperCase()}${tenantPlan.slice(1)} plan` : 'Workspace plan';
   const currentPageTitle = PAGE_TITLES[location.pathname] ?? 'Dashboard';
 
   const handleSignOut = () => {
@@ -107,10 +106,18 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick, onAskAura }) => {
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3 md:flex-none">
-          <Badge className="hidden sm:inline-flex items-center gap-2 border border-sky-100 bg-sky-50 text-sky-700 shadow-sm">
-            <CheckCircle2 className="h-4 w-4" />
-            {planLabel}
-          </Badge>
+          <div className="hidden items-center gap-2 sm:flex">
+            <Badge className="inline-flex items-center gap-2 border border-sky-100 bg-sky-50 text-sky-700 shadow-sm">
+              <CheckCircle2 className="h-4 w-4" />
+              {planLabel}
+            </Badge>
+            {isTestTenant && (
+              <Badge className="inline-flex items-center gap-2 border border-indigo-100 bg-indigo-50 text-indigo-700 shadow-sm">
+                <Sparkles className="h-4 w-4" />
+                Test mode: AI unlocked
+              </Badge>
+            )}
+          </div>
           <Button
             size="sm"
             className="hidden sm:inline-flex items-center gap-2 bg-sky-600 text-white hover:bg-sky-700"

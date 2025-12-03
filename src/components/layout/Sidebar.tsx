@@ -26,6 +26,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useSystemStatus } from '@/contexts/SystemContext';
 
 type NavItem = {
   label: string;
@@ -102,21 +103,33 @@ type SidebarProps = {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth() as { user?: { role?: string; email?: string } };
+  const { tenantPlan, isTestTenant } = useSystemStatus();
   const role = user?.role?.toString().toLowerCase();
   const isAdmin = role === 'admin' || role === 'owner';
   const isPlatformAdmin = user?.email?.toLowerCase() === 'admin@aura-gdpr.se';
+  const aiUnlocked = isTestTenant || tenantPlan === 'pro';
 
   const sections = React.useMemo(
     () =>
-      NAV_SECTIONS.map((section) => ({
-        ...section,
-        items: section.items.filter((item) => {
-          if (item.platformAdminOnly) return isPlatformAdmin;
-          if (item.adminOnly) return isAdmin;
-          return true;
-        }),
-      })).filter((section) => section.items.length > 0),
-    [isAdmin, isPlatformAdmin]
+      NAV_SECTIONS.map((section) => {
+        const itemsWithAccess = section.items.map((item) => {
+          if (item.label === 'AI Policy Generator') {
+            return aiUnlocked
+              ? { ...item, disabled: false, path: '/app/policies' }
+              : item;
+          }
+          return item;
+        });
+        return {
+          ...section,
+          items: itemsWithAccess.filter((item) => {
+            if (item.platformAdminOnly) return isPlatformAdmin;
+            if (item.adminOnly) return isAdmin;
+            return true;
+          }),
+        };
+      }).filter((section) => section.items.length > 0),
+    [aiUnlocked, isAdmin, isPlatformAdmin]
   );
 
   const renderNavItem = (item: NavItem) => {

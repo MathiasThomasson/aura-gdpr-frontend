@@ -10,7 +10,7 @@ import { useSystemStatus } from '@/contexts/SystemContext';
 const AppLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
   const [isAssistantOpen, setIsAssistantOpen] = React.useState(false);
-  const { demoMode, isOffline, versionInfo } = useSystemStatus();
+  const { demoMode, isOffline, versionInfo, isTestTenant, tenantPlan } = useSystemStatus();
 
   const versionLabel =
     versionInfo?.version && versionInfo.version.length > 0
@@ -30,6 +30,11 @@ const AppLayout: React.FC = () => {
           {isOffline && (
             <div className="flex items-center justify-center border-b border-rose-200 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-700">
               You are offline. Changes may not be saved until connectivity returns.
+            </div>
+          )}
+          {isTestTenant && (
+            <div className="flex items-center justify-center border-b border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700">
+              Test mode: All AI features are enabled for this tenant.
             </div>
           )}
           <Topbar onMenuClick={() => setIsSidebarOpen(true)} onAskAura={() => setIsAssistantOpen(true)} />

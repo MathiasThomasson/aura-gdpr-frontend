@@ -153,12 +153,17 @@ const TasksPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Tasks</h1>
-          <p className="text-sm text-slate-600">Track and manage your compliance tasks.</p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Tasks</h1>
+            <p className="text-sm text-slate-600">Organize GDPR work across owners, due dates, and priorities.</p>
+            <p className="text-sm text-slate-600">
+              Use this page to assign, track, and close compliance tasks across your program.
+            </p>
+          </div>
+          <NewTaskButton onNew={handleNew} />
         </div>
-        <NewTaskButton onNew={handleNew} />
       </div>
 
       <TasksFiltersBar
@@ -174,7 +179,7 @@ const TasksPage: React.FC = () => {
         onDueChange={setDue}
       />
 
-      {renderContent()}
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">{renderContent()}</div>
 
       <TaskDetailsDrawer
         task={selected}

@@ -132,12 +132,17 @@ const IncidentsPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Incidents</h1>
-          <p className="text-sm text-slate-600">Log, investigate and resolve personal data breaches.</p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Incidents</h1>
+            <p className="text-sm text-slate-600">Log and follow up on personal data breaches and security incidents.</p>
+            <p className="text-sm text-slate-600">
+              Track investigation steps, assign owners, and capture remediation actions.
+            </p>
+          </div>
+          <NewIncidentButton onNew={handleNew} />
         </div>
-        <NewIncidentButton onNew={handleNew} />
       </div>
 
       <IncidentFiltersBar
@@ -149,7 +154,7 @@ const IncidentsPage: React.FC = () => {
         onStatusChange={setStatus}
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">Incidents guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>A personal data breach includes loss, theft, or unauthorized access.</li>
@@ -159,7 +164,7 @@ const IncidentsPage: React.FC = () => {
         </ul>
       </div>
 
-      {renderContent()}
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">{renderContent()}</div>
 
       <IncidentDetailsDrawer
         incident={selected}

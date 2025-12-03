@@ -76,12 +76,17 @@ const RopaPage: React.FC = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Records of Processing Activities (ROPA)</h1>
-          <p className="text-sm text-slate-600">Maintain an overview of all personal data processing activities.</p>
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Records of Processing Activities (ROPA)</h1>
+            <p className="text-sm text-slate-600">Maintain your Record of Processing Activities (ROPA) as required by GDPR.</p>
+            <p className="text-sm text-slate-600">
+              Document processing purposes, legal bases, retention, and data flows for every activity.
+            </p>
+          </div>
+          <NewRopaButton onNew={handleNew} />
         </div>
-        <NewRopaButton onNew={handleNew} />
       </div>
 
       <RopaFiltersBar
@@ -94,7 +99,7 @@ const RopaPage: React.FC = () => {
         onOwnerChange={setOwner}
       />
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">ROPA guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>A Record of Processing Activities lists every way you handle personal data.</li>
@@ -104,16 +109,18 @@ const RopaPage: React.FC = () => {
         </ul>
       </div>
 
-      <RopaTable
-        records={filtered}
-        onSelect={handleSelect}
-        isLoading={loading}
-        isError={Boolean(error)}
-        errorMessage={error}
-        onRetry={refresh}
-        hasRecords={hasAnyRecords}
-        onCreate={handleNew}
-      />
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
+        <RopaTable
+          records={filtered}
+          onSelect={handleSelect}
+          isLoading={loading}
+          isError={Boolean(error)}
+          errorMessage={error}
+          onRetry={refresh}
+          hasRecords={hasAnyRecords}
+          onCreate={handleNew}
+        />
+      </div>
 
       <RopaDetailsDrawer
         record={selected}

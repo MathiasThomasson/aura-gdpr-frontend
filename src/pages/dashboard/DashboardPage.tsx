@@ -42,12 +42,11 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-          <p className="text-sm text-slate-600">
-            Data-driven overview of your GDPR compliance posture.
-          </p>
+          <p className="text-sm text-slate-600">This is your GDPR control center.</p>
+          <p className="text-sm text-slate-600">See open risks, ongoing requests, and key compliance indicators at a glance.</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={reload} disabled={loading || usingDemoData}>
@@ -68,7 +67,7 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-slate-900">Dashboard guidance</h3>
         <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>Global GDPR overview shows live posture across all modules.</li>
@@ -86,7 +85,7 @@ const DashboardPage: React.FC = () => {
         </div>
       )}
 
-      <section aria-label="Key metrics and onboarding">
+      <section aria-label="Key metrics and onboarding" className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <KpiGrid summary={summary} />
@@ -95,7 +94,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </section>
 
-      <section aria-label="Deadlines and AI insights">
+      <section aria-label="Deadlines and AI insights" className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <DeadlinesPanel deadlines={deadlines} />
@@ -104,7 +103,7 @@ const DashboardPage: React.FC = () => {
         </div>
       </section>
 
-      <section aria-label="Activity and risk">
+      <section aria-label="Activity and risk" className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <RecentActivityPanel activities={activities} />

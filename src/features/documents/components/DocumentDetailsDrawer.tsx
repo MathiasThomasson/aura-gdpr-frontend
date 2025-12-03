@@ -2,6 +2,7 @@ import React from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ExportPdfButton from '@/features/pdf-export/components/ExportPdfButton';
+import { useSystemStatus } from '@/contexts/SystemContext';
 import { DocumentItem, DocumentStatus, DocumentType, documentStatusLabels, documentTypeLabels } from '../types';
 import DocumentStatusBadge from './DocumentStatusBadge';
 
@@ -37,6 +38,8 @@ const formatDateTime = (value?: string) => {
 const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onSave, mode, isLoading = false, isSaving = false }) => {
   const [draft, setDraft] = React.useState<DocumentItem | null>(document);
   const [aiHint, setAiHint] = React.useState<string | null>(null);
+  const { tenantPlan, isTestTenant } = useSystemStatus();
+  const aiEnabled = isTestTenant || tenantPlan === 'pro';
 
   React.useEffect(() => {
     if (isOpen) {
@@ -180,13 +183,13 @@ const DocumentDetailsDrawer: React.FC<Props> = ({ document, isOpen, onClose, onS
 
             <button
               type="button"
-              disabled
+              disabled={!aiEnabled}
               onClick={handleGenerate}
               className="inline-flex items-center gap-2 text-sm text-sky-600 disabled:cursor-not-allowed"
-              title="AI generation will be available soon."
+              title={aiEnabled ? 'Generate a first draft with AI assistance.' : 'AI generation requires an upgraded tenant.'}
             >
               <Sparkles className="h-4 w-4" />
-              Generate with AI (coming soon)
+              {aiEnabled ? 'Generate with AI' : 'Generate with AI (locked)'}
             </button>
             {aiHint && <p className="text-xs text-slate-500">{aiHint}</p>}
           </div>
