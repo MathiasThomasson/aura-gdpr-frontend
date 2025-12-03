@@ -1,12 +1,13 @@
 import React from 'react';
 import { NotificationItem } from './types';
-import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from './api';
+import { deleteNotification, getNotifications, markAllNotificationsAsRead, markNotificationAsRead } from './api';
 
 type NotificationsContextValue = {
   notifications: NotificationItem[];
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
+  remove: (id: string) => Promise<void>;
   isLoading: boolean;
   isError: boolean;
 };
@@ -56,16 +57,26 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  const remove = React.useCallback(async (id: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+    try {
+      await deleteNotification(id);
+    } catch (error) {
+      setIsError(true);
+    }
+  }, []);
+
   const value = React.useMemo<NotificationsContextValue>(
     () => ({
       notifications,
       unreadCount: notifications.filter((n) => !n.read).length,
       markAsRead,
       markAllAsRead,
+      remove,
       isLoading,
       isError,
     }),
-    [notifications, markAllAsRead, markAsRead, isError, isLoading]
+    [notifications, markAllAsRead, markAsRead, remove, isError, isLoading]
   );
 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;

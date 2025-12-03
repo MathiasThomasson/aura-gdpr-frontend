@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { classifyIncident, type IncidentClassification, type IncidentClassificationRequest } from '../incidents';
+import { classifyIncident, type IncidentClassification, type IncidentClassificationRequest } from '../api/incidents';
 
 export function useAiIncidentClassifier() {
   const [result, setResult] = useState<IncidentClassification | null>(null);

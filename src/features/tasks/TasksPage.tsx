@@ -1,200 +1,373 @@
 import React from 'react';
+import { CheckCircle2, Plus, RefreshCw, Save, Trash2 } from 'lucide-react';
+import PageHeader from '@/components/PageHeader';
+import PageIntro from '@/components/PageIntro';
+import Card from '@/components/Card';
 import EmptyState from '@/components/EmptyState';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import TasksFiltersBar from './components/TasksFiltersBar';
-import TasksTable from './components/TasksTable';
-import TaskDetailsDrawer from './components/TaskDetailsDrawer';
-import NewTaskButton from './components/NewTaskButton';
 import useTasks from './hooks/useTasks';
-import { TaskItem, TaskPriority, TaskResourceType, TaskStatus } from './types';
+import { TaskItem, TaskResourceType, TaskStatus } from './types';
 
-type PriorityFilter = TaskPriority | 'all';
-type StatusFilter = TaskStatus | 'all';
-type ResourceFilter = TaskResourceType | 'general' | 'all';
-type DueFilter = 'all' | 'overdue' | 'today' | 'week';
+type FormState = {
+  id?: string;
+  title: string;
+  description: string;
+  status: TaskStatus;
+  dueDate: string;
+  resourceType: TaskResourceType;
+  resourceId: string;
+  assignee: string;
+};
 
-const isDueFilterMatch = (dueDate: string, filter: DueFilter) => {
-  if (filter === 'all') return true;
-  const date = new Date(dueDate);
-  if (Number.isNaN(date.getTime())) return false;
-  const now = new Date();
-  const diffDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  if (filter === 'overdue') return diffDays < 0;
-  if (filter === 'today') return diffDays === 0;
-  if (filter === 'week') return diffDays >= 0 && diffDays <= 7;
-  return true;
+const statusOptions: TaskStatus[] = ['open', 'in_progress', 'blocked', 'completed', 'cancelled'];
+const resourceOptions: TaskResourceType[] = ['dsr', 'policy', 'document', 'dpia', 'ropa', 'incident', 'toms', 'general'];
+
+const createEmptyForm = (): FormState => ({
+  title: '',
+  description: '',
+  status: 'open',
+  dueDate: '',
+  resourceType: 'general',
+  resourceId: '',
+  assignee: '',
+});
+
+const mapToForm = (item: TaskItem): FormState => ({
+  id: item.id,
+  title: item.title,
+  description: item.description,
+  status: item.status,
+  dueDate: item.dueDate,
+  resourceType: item.resourceType,
+  resourceId: item.resourceId ?? '',
+  assignee: item.assignee,
+});
+
+const formatDate = (value?: string) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 };
 
 const TasksPage: React.FC = () => {
-  const { tasks, loading, detailLoading, saving, error, refresh, fetchOne, create, update, patch } = useTasks();
+  const { tasks, loading, saving, error, refresh, create, update, patch, remove } = useTasks();
+  const [form, setForm] = React.useState<FormState>(createEmptyForm());
   const [search, setSearch] = React.useState('');
-  const [status, setStatus] = React.useState<StatusFilter>('all');
-  const [priority, setPriority] = React.useState<PriorityFilter>('all');
-  const [resource, setResource] = React.useState<ResourceFilter>('all');
-  const [due, setDue] = React.useState<DueFilter>('all');
-  const [selected, setSelected] = React.useState<TaskItem | null>(null);
-  const [mode, setMode] = React.useState<'view' | 'create' | 'edit'>('view');
-  const hasAnyTasks = tasks.length > 0;
+  const [statusFilter, setStatusFilter] = React.useState<TaskStatus | 'all'>('all');
+  const [editingId, setEditingId] = React.useState<string | null>(null);
 
-  const filtered = React.useMemo(
-    () =>
-      tasks.filter((task) => {
-        const matchesSearch =
-          task.title.toLowerCase().includes(search.toLowerCase()) ||
-          (task.resourceName || '').toLowerCase().includes(search.toLowerCase());
-        const matchesStatus = status === 'all' ? true : task.status === status;
-        const matchesPriority = priority === 'all' ? true : task.priority === priority;
-        const matchesResource = resource === 'all' ? true : task.resourceType === resource;
-        const matchesDue = isDueFilterMatch(task.dueDate, due);
-        return matchesSearch && matchesStatus && matchesPriority && matchesResource && matchesDue;
-      }),
-    [tasks, search, status, priority, resource, due]
-  );
+  const filtered = React.useMemo(() => {
+    return tasks.filter((task) => {
+      const matchesSearch = task.title.toLowerCase().includes(search.toLowerCase());
+      const matchesStatus = statusFilter === 'all' ? true : task.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [tasks, search, statusFilter]);
+
+  const resetForm = () => {
+    setForm(createEmptyForm());
+    setEditingId(null);
+  };
 
   const handleSelect = (task: TaskItem) => {
-    setSelected(task);
-    setMode('edit');
-    if (task.id) {
-      fetchOne(task.id)
-        .then((detail) => setSelected(detail))
-        .catch(() => {});
+    setEditingId(task.id);
+    setForm(mapToForm(task));
+  };
+
+  const buildPayload = (source?: TaskItem): Partial<TaskItem> => ({
+    ...source,
+    title: form.title || 'Task',
+    description: form.description,
+    status: form.status,
+    priority: source?.priority ?? 'medium',
+    dueDate: form.dueDate,
+    resourceType: form.resourceType,
+    resourceId: form.resourceId,
+    assignee: form.assignee,
+    createdAt: source?.createdAt ?? new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  });
+
+  const handleSave = async () => {
+    const source = editingId ? tasks.find((t) => t.id === editingId) : undefined;
+    const payload = buildPayload(source);
+    if (editingId) {
+      await update(editingId, payload);
+    } else {
+      await create(payload as Omit<TaskItem, 'id'>);
     }
+    await refresh();
+    resetForm();
   };
 
-  const handleSave = async (task: TaskItem, saveMode: 'create' | 'edit') => {
-    try {
-      if (saveMode === 'create') {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { id, ...payload } = task;
-        await create(payload);
-      } else if (task.id) {
-        await update(task.id, task);
-      }
-      await refresh();
-      setSelected(null);
-      setMode('view');
-    } catch (err) {
-      // errors are captured in hook state
-    }
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
+    const confirmed = window.confirm('Delete this task?');
+    if (!confirmed) return;
+    await remove(id);
+    await refresh();
+    if (editingId === id) resetForm();
   };
 
-  const handleNew = () => {
-    const now = new Date().toISOString();
-    setSelected({
-      id: '',
-      title: '',
-      description: '',
-      status: 'open',
-      priority: 'medium',
-      dueDate: now.slice(0, 10),
-      createdAt: now,
-      updatedAt: now,
-      assignee: '',
-      resourceType: 'general',
-      resourceId: '',
-      resourceName: '',
-    });
-    setMode('create');
+  const markComplete = async (id: string) => {
+    await patch(id, { status: 'completed' });
+    await refresh();
   };
 
-  const handleStatusChange = async (taskId: string, nextStatus: TaskStatus) => {
-    try {
-      await patch(taskId, { status: nextStatus });
-      await refresh();
-    } catch (err) {
-      // errors are captured in hook state
-    }
-  };
-
-  const handlePriorityChange = async (taskId: string, nextPriority: TaskPriority) => {
-    try {
-      await patch(taskId, { priority: nextPriority });
-      await refresh();
-    } catch (err) {
-      // errors are captured in hook state
-    }
-  };
-
-  const renderContent = () => {
+  const renderRows = () => {
     if (loading) {
       return (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <Skeleton key={idx} className="h-20 w-full rounded-lg bg-slate-100" />
+        <tbody>
+          {Array.from({ length: 4 }).map((_, idx) => (
+            <tr key={idx}>
+              <td colSpan={5} className="p-3">
+                <Skeleton className="h-10 w-full rounded-md" />
+              </td>
+            </tr>
           ))}
-        </div>
+        </tbody>
       );
     }
 
     if (error) {
       return (
-        <EmptyState
-          title="Unable to load tasks"
-          description={error}
-          actionLabel="Retry"
-          onAction={() => refresh()}
-          className="bg-rose-50 border-rose-200"
-        />
+        <tbody>
+          <tr>
+            <td colSpan={5} className="p-4">
+              <EmptyState
+                title="Unable to load tasks"
+                description="We could not fetch tasks. Retry to try again."
+                actionLabel="Retry"
+                onAction={refresh}
+              />
+            </td>
+          </tr>
+        </tbody>
       );
     }
 
     if (filtered.length === 0) {
-      const title = hasAnyTasks ? 'No tasks match these filters' : 'No tasks yet';
-      const description = hasAnyTasks
-        ? 'Adjust filters or create a new task to continue tracking work.'
-        : 'Organize your GDPR work by creating your first task.';
       return (
-        <EmptyState title={title} description={description} actionLabel="New task" onAction={handleNew} />
+        <tbody>
+          <tr>
+            <td colSpan={5} className="p-4">
+              <EmptyState
+                title={tasks.length === 0 ? 'No tasks yet' : 'No matches'}
+                description={
+                  tasks.length === 0 ? 'Create your first task to keep teams accountable.' : 'Adjust filters or add a new task.'
+                }
+                actionLabel="New task"
+                onAction={resetForm}
+              />
+            </td>
+          </tr>
+        </tbody>
       );
     }
 
-    return <TasksTable tasks={filtered} onSelect={handleSelect} />;
+    return (
+      <tbody className="divide-y divide-slate-100">
+        {filtered.map((task) => (
+          <tr key={task.id} className="hover:bg-slate-50">
+            <td className="p-3">
+              <div className="font-semibold text-slate-900">{task.title}</div>
+              <p className="text-xs text-slate-500">{task.description.slice(0, 80)}</p>
+            </td>
+            <td className="p-3 text-sm text-slate-700">{formatDate(task.dueDate)}</td>
+            <td className="p-3">
+              <Badge className="bg-slate-100 text-slate-800 capitalize">{task.status.replace('_', ' ')}</Badge>
+            </td>
+            <td className="p-3 text-sm text-slate-700">
+              {task.resourceType}
+              {task.resourceId ? ` · ${task.resourceId}` : ''}
+            </td>
+            <td className="p-3">
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="outline" onClick={() => handleSelect(task)}>
+                  Edit
+                </Button>
+                <Button size="sm" variant="ghost" className="text-emerald-700" onClick={() => markComplete(task.id)}>
+                  <CheckCircle2 className="mr-1 h-4 w-4" />
+                  Complete
+                </Button>
+                <Button size="sm" variant="ghost" className="text-rose-600" onClick={() => handleDelete(task.id)}>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
   };
 
   return (
     <div className="space-y-6 p-6">
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Tasks</h1>
-            <p className="text-sm text-slate-600">Organize GDPR work across owners, due dates, and priorities.</p>
-            <p className="text-sm text-slate-600">
-              Use this page to assign, track, and close compliance tasks across your program.
-            </p>
+      <PageHeader
+        title="Tasks"
+        subtitle="Assign and complete tasks across DPIA, ROPA, incidents, and policies."
+        actions={
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={refresh}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+            <Button size="sm" onClick={resetForm}>
+              <Plus className="mr-2 h-4 w-4" />
+              New task
+            </Button>
           </div>
-          <NewTaskButton onNew={handleNew} />
+        }
+      />
+
+      <PageIntro
+        title="What you can do here"
+        subtitle="Keep all compliance tasks visible and actionable."
+        bullets={[
+          'Create tasks tied to DPIA, ROPA, incidents, or documents.',
+          'Set due dates and mark tasks complete when finished.',
+          'Filter by status to focus on what is due now.',
+        ]}
+      />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card
+            title="Task list"
+            subtitle="Every task for your tenant."
+            actions={
+              <div className="flex items-center gap-2">
+                <select
+                  className="rounded-lg border border-slate-200 px-2 py-2 text-sm text-slate-700"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as TaskStatus | 'all')}
+                >
+                  <option value="all">All statuses</option>
+                  {statusOptions.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  placeholder="Search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-9 w-44"
+                />
+              </div>
+            }
+          >
+            <div className="overflow-hidden rounded-lg border border-slate-200">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                  <tr>
+                    <th className="p-3">Title</th>
+                    <th className="p-3">Due date</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Related module</th>
+                    <th className="p-3">Actions</th>
+                  </tr>
+                </thead>
+                {renderRows()}
+              </table>
+            </div>
+          </Card>
+        </div>
+
+        <div>
+          <Card
+            title={editingId ? 'Edit task' : 'Create task'}
+            subtitle="Track work items across modules."
+            actions={
+              editingId ? (
+                <Button variant="ghost" className="text-rose-600" size="sm" onClick={() => handleDelete(editingId)}>
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  Delete
+                </Button>
+              ) : null
+            }
+          >
+            <div className="space-y-3">
+              <Input
+                placeholder="Title"
+                value={form.title}
+                onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+              />
+              <Textarea
+                placeholder="Description"
+                rows={3}
+                value={form.description}
+                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-600">Status</label>
+                  <select
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800"
+                    value={form.status}
+                    onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value as TaskStatus }))}
+                  >
+                    {statusOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s.replace('_', ' ')}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-600">Due date</label>
+                  <Input
+                    type="date"
+                    value={form.dueDate ? form.dueDate.slice(0, 10) : ''}
+                    onChange={(e) => setForm((prev) => ({ ...prev, dueDate: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-600">Related module</label>
+                <select
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 capitalize"
+                  value={form.resourceType}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, resourceType: e.target.value as TaskResourceType }))
+                  }
+                >
+                  {resourceOptions.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Input
+                placeholder="Related ID (optional)"
+                value={form.resourceId}
+                onChange={(e) => setForm((prev) => ({ ...prev, resourceId: e.target.value }))}
+              />
+              <Input
+                placeholder="Assignee"
+                value={form.assignee}
+                onChange={(e) => setForm((prev) => ({ ...prev, assignee: e.target.value }))}
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" onClick={handleSave} disabled={saving}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save
+                </Button>
+                <Button size="sm" variant="outline" onClick={resetForm}>
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
-
-      <TasksFiltersBar
-        search={search}
-        status={status}
-        priority={priority}
-        resource={resource}
-        due={due}
-        onSearch={setSearch}
-        onStatusChange={setStatus}
-        onPriorityChange={setPriority}
-        onResourceChange={setResource}
-        onDueChange={setDue}
-      />
-
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">{renderContent()}</div>
-
-      <TaskDetailsDrawer
-        task={selected}
-        isOpen={Boolean(selected)}
-        mode={mode}
-        onClose={() => {
-          setSelected(null);
-          setMode('view');
-        }}
-        onSave={handleSave}
-        isLoading={detailLoading}
-        isSaving={saving}
-        onStatusChange={handleStatusChange}
-        onPriorityChange={handlePriorityChange}
-      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createRopa, getAllRopa, getRopa, patchRopa, updateRopa } from '../api';
+import { createRopa, deleteRopa, getAllRopa, getRopa, patchRopa, updateRopa } from '../api';
 import type { RopaItem } from '../types';
 
 const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
@@ -85,6 +85,11 @@ export function useRopa() {
     return updated;
   }, []);
 
+  const remove = useCallback(async (id: string) => {
+    await deleteRopa(id);
+    if (isMounted.current) setRecords((prev) => prev.filter((r) => r.id !== id));
+  }, []);
+
   return {
     records,
     loading,
@@ -96,6 +101,7 @@ export function useRopa() {
     create,
     update,
     patch,
+    remove,
   };
 }
 

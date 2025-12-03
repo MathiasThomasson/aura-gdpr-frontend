@@ -4,9 +4,11 @@ import NotificationRow from './NotificationRow';
 
 type Props = {
   notifications: NotificationItem[];
+  onDelete?: (id: string) => void;
+  onMarkRead?: (id: string) => void;
 };
 
-const NotificationsList: React.FC<Props> = ({ notifications }) => {
+const NotificationsList: React.FC<Props> = ({ notifications, onDelete, onMarkRead }) => {
   if (notifications.length === 0) {
     return <p className="text-sm text-muted-foreground">You are all caught up. No notifications to show.</p>;
   }
@@ -14,7 +16,7 @@ const NotificationsList: React.FC<Props> = ({ notifications }) => {
   return (
     <div className="space-y-3">
       {notifications.map((notification) => (
-        <NotificationRow key={notification.id} notification={notification} />
+        <NotificationRow key={notification.id} notification={notification} onDelete={onDelete} onMarkRead={onMarkRead} />
       ))}
     </div>
   );

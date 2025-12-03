@@ -12,6 +12,7 @@ import AdminPage from '@/pages/AdminPage';
 import TasksPage from '@/pages/TasksPage';
 import ProjectsPage from '@/pages/ProjectsPage';
 import AuditPage from '@/pages/AuditPage';
+import LogsPage from '@/pages/LogsPage';
 import RiskMatrixPage from '@/pages/RiskMatrixPage';
 import DpiaPage from '@/pages/DpiaPage';
 import DSRPage from '@/pages/dsr/DSRPage';
@@ -23,6 +24,7 @@ import AdminDsrPortalSettingsPage from '@/pages/AdminDsrPortalSettingsPage';
 import NotificationSettingsPage from '@/pages/NotificationSettingsPage';
 import PoliciesPage from '@/pages/PoliciesPage';
 import IncidentsPage from '@/pages/IncidentsPage';
+import TemplatesPage from '@/pages/TemplatesPage';
 import RopaPage from '@/pages/RopaPage';
 import TomsPage from '@/pages/TomsPage';
 import CookiesPage from '@/pages/CookiesPage';
@@ -100,10 +102,12 @@ const AppRoutes = () => (
       <Route path="tasks" element={<TasksPage />} />
       <Route path="projects" element={<ProjectsPage />} />
       <Route path="audit" element={<AuditPage />} />
+      <Route path="logs" element={<LogsPage />} />
       <Route path="risk-matrix" element={<RiskMatrixPage />} />
       <Route path="dsr" element={<DSRPage />} />
       <Route path="dpia" element={<DpiaPage />} />
       <Route path="ropa" element={<RopaPage />} />
+      <Route path="templates" element={<TemplatesPage />} />
       <Route path="cookies" element={<CookiesPage />} />
       <Route path="policies" element={<PoliciesPage />} />
       <Route path="incidents" element={<IncidentsPage />} />

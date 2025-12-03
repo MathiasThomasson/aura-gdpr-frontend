@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createPolicy, getAllPolicies, getPolicy, patchPolicy, updatePolicy } from '../api';
+import { createPolicy, deletePolicy, getAllPolicies, getPolicy, patchPolicy, publishPolicy, updatePolicy } from '../api';
 import type { PolicyItem } from '../types';
 
 const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
@@ -85,6 +85,17 @@ export function usePolicies() {
     return updated;
   }, []);
 
+  const remove = useCallback(async (id: string) => {
+    await deletePolicy(id);
+    if (isMounted.current) setPolicies((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
+  const publish = useCallback(async (id: string) => {
+    const updated = await publishPolicy(id);
+    if (isMounted.current) setPolicies((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    return updated;
+  }, []);
+
   return {
     policies,
     loading,
@@ -96,6 +107,8 @@ export function usePolicies() {
     create,
     update,
     patch,
+    remove,
+    publish,
   };
 }
 

@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { explainText, type ExplainParams, type ExplainResult } from '../explain';
+import { explainText, type ExplainParams, type ExplainResult } from '../api/explain';
 
 export function useAiExplain() {
   const [result, setResult] = useState<ExplainResult | null>(null);

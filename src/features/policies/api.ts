@@ -58,6 +58,15 @@ export async function patchPolicy(id: string, payload: Partial<PolicyItem>): Pro
   return mapPolicy(res.data);
 }
 
+export async function deletePolicy(id: string): Promise<void> {
+  await api.delete(`/api/policies/${id}`);
+}
+
+export async function publishPolicy(id: string): Promise<PolicyItem> {
+  const res = await api.post(`/api/policies/${id}/publish`);
+  return mapPolicy(res.data);
+}
+
 export async function generatePolicyWithAi(input: GeneratePolicyInput): Promise<GeneratePolicyResult> {
   try {
     const res = await api.post('/api/ai/policies/generate', {

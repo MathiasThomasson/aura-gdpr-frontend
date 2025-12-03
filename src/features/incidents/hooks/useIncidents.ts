@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { create, getAll, getOne, patch, update } from '../api';
+import { create, getAll, getOne, patch, remove as deleteIncident, update } from '../api';
 import { IncidentItem, IncidentStatus } from '../types';
 
 const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
@@ -107,6 +107,13 @@ export function useIncidents() {
     }
   }, []);
 
+  const removeIncident = useCallback(async (id: string) => {
+    await deleteIncident(id);
+    if (isMounted.current) {
+      setIncidents((prev) => prev.filter((i) => i.id !== id));
+    }
+  }, []);
+
   return {
     incidents,
     loading,
@@ -118,6 +125,7 @@ export function useIncidents() {
     create: createIncident,
     update: updateIncident,
     patch: patchIncident,
+    remove: removeIncident,
   };
 }
 

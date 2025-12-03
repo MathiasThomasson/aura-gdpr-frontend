@@ -51,3 +51,7 @@ export async function patchDpia(id: string, payload: Partial<DpiaItem>): Promise
   const res = await api.patch(`/api/dpia/${id}`, payload);
   return mapDpia(res.data);
 }
+
+export async function deleteDpia(id: string): Promise<void> {
+  await api.delete(`/api/dpia/${id}`);
+}

@@ -1,5 +1,5 @@
 ﻿import { useCallback, useState } from 'react';
-import { generateDpia, type GenerateDpiaParams, type GeneratedDpia } from '../dpia';
+import { generateDpia, type GenerateDpiaParams, type GeneratedDpia } from '../api/dpia';
 
 export function useAiDpiaGenerator() {
   const [result, setResult] = useState<GeneratedDpia | null>(null);

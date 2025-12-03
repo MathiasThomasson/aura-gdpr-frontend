@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { create, getAll, getOne, patch, update } from '../api';
+import { create, getAll, getOne, patch, remove as deleteTask, update } from '../api';
 import { TaskItem } from '../types';
 
 const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
@@ -107,6 +107,13 @@ export function useTasks() {
     }
   }, []);
 
+  const removeTask = useCallback(async (id: string) => {
+    await deleteTask(id);
+    if (isMounted.current) {
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    }
+  }, []);
+
   return {
     tasks,
     loading,
@@ -118,6 +125,7 @@ export function useTasks() {
     create: createTask,
     update: updateTask,
     patch: patchTask,
+    remove: removeTask,
   };
 }
 

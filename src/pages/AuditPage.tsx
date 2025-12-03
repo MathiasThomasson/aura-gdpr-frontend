@@ -1,1 +1,1 @@
-export { default } from '@/features/audit-log/AuditLogPage';
+export { default } from '@/features/audit/AuditSummaryPage';

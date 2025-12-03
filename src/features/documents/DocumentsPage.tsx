@@ -1,6 +1,11 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
-import PageInfoBox from '@/components/PageInfoBox';
+import PageHeader from '@/components/PageHeader';
+import PageIntro from '@/components/PageIntro';
+import Card from '@/components/Card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import api from '@/lib/apiClient';
 import useDocuments from './hooks/useDocuments';
 import { DocumentItem, DocumentStatus, DocumentType } from './types';
 import DocumentFiltersBar from './components/DocumentFiltersBar';
@@ -18,6 +23,11 @@ const DocumentsPage: React.FC = () => {
   const [type, setType] = React.useState<FilterType>('all');
   const [selected, setSelected] = React.useState<DocumentItem | null>(null);
   const [drawerMode, setDrawerMode] = React.useState<'view' | 'create'>('view');
+  const [aiSource, setAiSource] = React.useState('');
+  const [aiInstructions, setAiInstructions] = React.useState('');
+  const [aiResult, setAiResult] = React.useState('');
+  const [aiError, setAiError] = React.useState<string | null>(null);
+  const [aiLoading, setAiLoading] = React.useState(false);
   const hasAnyDocuments = documents.length > 0;
 
   const filtered = React.useMemo(() => {
@@ -84,37 +94,51 @@ const DocumentsPage: React.FC = () => {
     setDrawerMode('view');
   };
 
+  const handleImproveWithAi = async () => {
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await api.post('/ai/documents/improve', {
+        content: aiSource,
+        instructions: aiInstructions,
+      });
+      const improved = (res.data?.content ?? res.data?.improved ?? '') as string;
+      setAiResult(improved || 'AI did not return improved content.');
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : 'AI request failed.');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6 p-6">
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Documents</h1>
-            <p className="text-sm text-slate-600">Store and manage all GDPR-related documents in one place.</p>
-            <p className="text-sm text-slate-600">
-              Upload existing documents or generate new ones with AI (depending on your plan).
-            </p>
-          </div>
-          <NewDocumentMenu onNewBlank={handleCreateBlank} onTemplateSelect={handleCreateFromTemplate} />
-        </div>
-      </div>
-
-      <PageInfoBox
-        title="Document center"
-        description="Centralize policies, agreements, and guidelines. Future AI assistance will help you draft, review, and publish faster."
+      <PageHeader
+        title="Documents"
+        subtitle="Store and manage all GDPR-related documents in one place."
+        actions={<NewDocumentMenu onNewBlank={handleCreateBlank} onTemplateSelect={handleCreateFromTemplate} />}
       />
 
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-slate-900">Documents guidance</h3>
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-700">
+      <PageIntro
+        title="What you can do here"
+        subtitle="Centralize policies, agreements, and evidence."
+        bullets={[
+          'Upload and categorize documents by status and type.',
+          'Filter drafts and published versions quickly.',
+          'Use AI to improve drafts before sharing.',
+        ]}
+      />
+
+      <Card title="Documents guidance" subtitle="Tips to keep your evidence organized.">
+        <ul className="list-disc space-y-1 pl-4 text-sm text-slate-700">
           <li>Use this space to store GDPR evidence, templates, and signed agreements.</li>
-          <li>Every file keeps version history so you can track who changed what.</li>
+          <li>Track versions so you know who changed what and when.</li>
           <li>AI-assisted generation drafts policies and notices faster.</li>
           <li>Upload rules: PDF and DOCX are supported for storage and review.</li>
         </ul>
-      </div>
+      </Card>
 
-      <div className="rounded-xl border border-slate-200 bg-white/95 p-6 shadow-sm space-y-4">
+      <Card title="Documents" subtitle="Filter and manage your library.">
         <DocumentFiltersBar
           search={search}
           status={status}
@@ -134,20 +158,43 @@ const DocumentsPage: React.FC = () => {
           hasDocuments={hasAnyDocuments}
           onCreate={handleCreateBlank}
         />
-      </div>
+      </Card>
 
-      <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
-        <div className="flex items-start gap-2">
-          <Sparkles className="mt-0.5 h-4 w-4 text-sky-600" />
-          <div>
-            <p className="font-semibold text-slate-800">AI document workflows (coming soon)</p>
-            <p>
-              Generate drafts, review for GDPR gaps, and keep your templates up to date with AI assistance. This UI is
-              ready for future integration.
-            </p>
+      <Card
+        title="Improve document with AI"
+        subtitle="Send a draft to AURA and get improved wording back."
+        actions={
+          <Button size="sm" variant="outline" onClick={handleImproveWithAi} disabled={aiLoading}>
+            {aiLoading ? 'Improving...' : 'Run AI'}
+          </Button>
+        }
+      >
+        <div className="space-y-3">
+          <Textarea
+            placeholder="Paste your document text"
+            value={aiSource}
+            onChange={(e) => setAiSource(e.target.value)}
+            rows={4}
+          />
+          <Textarea
+            placeholder="Instructions for AI (tone, focus areas, audience)"
+            value={aiInstructions}
+            onChange={(e) => setAiInstructions(e.target.value)}
+            rows={3}
+          />
+          {aiError ? <p className="text-xs text-rose-600">{aiError}</p> : null}
+          {aiResult ? (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="text-xs font-semibold text-slate-700">AI suggestion</p>
+              <p className="mt-1 text-sm text-slate-800 whitespace-pre-wrap">{aiResult}</p>
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <Sparkles className="h-4 w-4 text-sky-600" />
+            <span>AI responses are drafts; review before publishing.</span>
           </div>
         </div>
-      </div>
+      </Card>
 
       <DocumentDetailsDrawer
         document={selected}

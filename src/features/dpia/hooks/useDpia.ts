@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createDpia, getAllDpia, getDpia, patchDpia, updateDpia } from '../api';
+import { createDpia, deleteDpia, getAllDpia, getDpia, patchDpia, updateDpia } from '../api';
 import type { DpiaItem } from '../types';
 
 const loadErrorMessage = 'Something went wrong while loading data. Please try again.';
@@ -85,6 +85,11 @@ export function useDpia() {
     return updated;
   }, []);
 
+  const remove = useCallback(async (id: string) => {
+    await deleteDpia(id);
+    if (isMounted.current) setDpias((prev) => prev.filter((d) => d.id !== id));
+  }, []);
+
   return {
     dpias,
     loading,
@@ -96,6 +101,7 @@ export function useDpia() {
     create,
     update,
     patch,
+    remove,
   };
 }
 

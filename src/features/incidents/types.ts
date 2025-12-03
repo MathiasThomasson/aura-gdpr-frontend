@@ -20,6 +20,8 @@ export interface IncidentItem {
   affectedData: string;
   affectedSubjects: string;
   detectionMethod: string;
+  occurredAt?: string;
+  resolutionSummary?: string;
   createdAt: string;
   lastUpdated: string;
   timeline: IncidentTimelineEvent[];

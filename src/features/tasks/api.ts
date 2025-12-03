@@ -68,3 +68,7 @@ export async function patch(id: string, payload: Partial<TaskItem>): Promise<Tas
   const res = await api.patch(`/api/tasks/${id}`, payload);
   return mapTask(res.data);
 }
+
+export async function remove(id: string): Promise<void> {
+  await api.delete(`/api/tasks/${id}`);
+}

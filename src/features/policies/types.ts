@@ -17,6 +17,7 @@ export interface PolicyItem {
   owner: string;
   lastUpdated: string;
   createdAt: string;
+  version?: string | number;
   language?: string;
   tags?: string[];
   summary?: string;

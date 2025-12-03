@@ -20,6 +20,9 @@ export interface AuditLogItem {
   resourceType: AuditResourceType;
   resourceId?: string;
   resourceName?: string;
+  targetType?: string;
+  targetId?: string;
+  userId?: string;
   severity: AuditSeverity;
   ipAddress?: string;
   userAgent?: string;

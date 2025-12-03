@@ -42,6 +42,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/app/dpia': 'DPIA',
   '/app/policies': 'Policies',
   '/app/incidents': 'Incidents',
+  '/app/templates': 'Templates',
   '/app/billing': 'Billing',
   '/app/settings': 'Settings',
   '/app/settings/notifications': 'Notification Settings',
@@ -50,6 +51,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/app/platform-admin': 'Platform Admin',
   '/app/admin/dsr-portal': 'DSR Portal Admin',
   '/app/notifications': 'Notifications',
+  '/app/logs': 'Audit Logs',
 };
 
 const getInitials = (name?: string) => {

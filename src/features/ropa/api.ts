@@ -46,3 +46,7 @@ export async function patchRopa(id: string, payload: Partial<RopaItem>): Promise
   const res = await api.patch(`/api/ropa/${id}`, payload);
   return mapRopa(res.data);
 }
+
+export async function deleteRopa(id: string): Promise<void> {
+  await api.delete(`/api/ropa/${id}`);
+}

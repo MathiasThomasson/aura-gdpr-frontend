@@ -34,6 +34,8 @@ const mapIncident = (item: any): IncidentItem => {
     affectedData: item?.affectedData ?? item?.affected_data ?? '',
     affectedSubjects: item?.affectedSubjects ?? item?.affected_subjects ?? '',
     detectionMethod: item?.detectionMethod ?? item?.detection_method ?? '',
+    occurredAt: item?.occurredAt ?? item?.occurred_at ?? createdAt,
+    resolutionSummary: item?.resolutionSummary ?? item?.resolution_summary ?? '',
     createdAt,
     lastUpdated,
     timeline: Array.isArray(item?.timeline) ? item.timeline.map(mapTimelineEvent) : [],
@@ -76,4 +78,8 @@ export async function update(id: string, payload: Partial<IncidentItem>): Promis
 export async function patch(id: string, payload: Partial<IncidentItem>): Promise<IncidentItem> {
   const res = await api.patch(`/api/incidents/${id}`, payload);
   return mapIncident(res.data);
+}
+
+export async function remove(id: string): Promise<void> {
+  await api.delete(`/api/incidents/${id}`);
 }

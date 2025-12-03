@@ -14,6 +14,8 @@ import { useNotifications } from '../hooks/useNotifications';
 
 type Props = {
   notification: NotificationItem;
+  onDelete?: (id: string) => void;
+  onMarkRead?: (id: string) => void;
 };
 
 const iconMap: Record<NotificationItem['type'], React.ReactNode> = {
@@ -44,15 +46,27 @@ const formatRelative = (value: string) => {
   return `${days}d ago`;
 };
 
-const NotificationRow: React.FC<Props> = ({ notification }) => {
+const NotificationRow: React.FC<Props> = ({ notification, onDelete, onMarkRead }) => {
   const { markAsRead } = useNotifications();
   const navigate = useNavigate();
 
   const handleClick = async () => {
     await markAsRead(notification.id);
+    onMarkRead?.(notification.id);
     if (notification.link) {
       navigate(notification.link);
     }
+  };
+
+  const handleDelete = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    onDelete?.(notification.id);
+  };
+
+  const handleMarkRead = async (event: React.MouseEvent) => {
+    event.stopPropagation();
+    await markAsRead(notification.id);
+    onMarkRead?.(notification.id);
   };
 
   return (
@@ -82,6 +96,16 @@ const NotificationRow: React.FC<Props> = ({ notification }) => {
         </div>
         <p className="text-sm text-slate-700">{notification.description}</p>
         <p className="text-xs text-slate-500">{formatRelative(notification.createdAt)}</p>
+      </div>
+      <div className="flex flex-col items-end gap-2 text-xs text-slate-600">
+        {!notification.read ? (
+          <button className="rounded-md bg-slate-100 px-2 py-1 hover:bg-slate-200" onClick={handleMarkRead}>
+            Mark read
+          </button>
+        ) : null}
+        <button className="text-rose-600 hover:underline" onClick={handleDelete}>
+          Delete
+        </button>
       </div>
     </div>
   );

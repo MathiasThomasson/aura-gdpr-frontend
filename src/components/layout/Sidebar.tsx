@@ -51,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
     title: 'Compliance',
     items: [
       { label: 'Documents', path: '/app/documents', icon: FileText },
+      { label: 'Templates', path: '/app/templates', icon: ClipboardList },
       { label: 'Policies', path: '/app/policies', icon: ShieldCheck },
       { label: 'Data Subject Requests', path: '/app/dsr', icon: Inbox },
       { label: 'DPIA', path: '/app/dpia', icon: FileSignature },
@@ -66,7 +67,8 @@ const NAV_SECTIONS: NavSection[] = [
       { label: 'Tasks', path: '/app/tasks', icon: CheckSquare },
       { label: 'Projects', path: '/app/projects', icon: Briefcase },
       { label: 'Risk Matrix', path: '/app/risk-matrix', icon: Activity },
-      { label: 'Audit Log', path: '/app/audit', icon: ClipboardList },
+      { label: 'Audit Dashboard', path: '/app/audit', icon: ClipboardList },
+      { label: 'Logs', path: '/app/logs', icon: Activity },
       { label: 'Notifications', path: '/app/notifications', icon: Bell },
       { label: 'Admin', path: '/app/admin', icon: ShieldCheck, adminOnly: true },
       { label: 'Users & Roles', path: '/app/admin/workspace/users', icon: ShieldCheck, adminOnly: true },
