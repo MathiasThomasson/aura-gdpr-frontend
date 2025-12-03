@@ -36,6 +36,9 @@ import ErrorPage from '@/pages/ErrorPage';
 import SecurityHealthPage from '@/pages/SecurityHealthPage';
 import { useAuth } from '@/contexts/AuthContext';
 import LandingPage from '@/features/marketing/LandingPage';
+import BlogPage from '@/features/marketing/BlogPage';
+import BlogDetailPage from '@/features/marketing/BlogDetailPage';
+import ContactPage from '@/features/marketing/ContactPage';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import OnboardingPage from '@/features/onboarding/OnboardingPage';
 import PublicDsrFormPage from '@/pages/public/PublicDsrFormPage';
@@ -68,6 +71,9 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<LandingPage />} />
+    <Route path="/blog" element={<BlogPage />} />
+    <Route path="/blog/:slug" element={<BlogDetailPage />} />
+    <Route path="/contact" element={<ContactPage />} />
     <Route path="/demo" element={<Navigate to="/app/dashboard?demo=1" replace />} />
     <Route path="/dsr-portal" element={<DsrPortalPage />} />
     <Route path="/public/dsr/:publicKey" element={<PublicDsrFormPage />} />

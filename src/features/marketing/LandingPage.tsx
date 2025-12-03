@@ -1,5 +1,17 @@
 import React from 'react';
-import { Check, ClipboardList, CloudCog, FileText, Lock, ShieldCheck, Sparkles } from 'lucide-react';
+import {
+  Check,
+  ClipboardList,
+  CloudCog,
+  FileText,
+  Lock,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  Video,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 const container = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
@@ -11,30 +23,32 @@ const HeroSection: React.FC = () => {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
             <Sparkles className="h-4 w-4" />
-            Purpose-built for privacy teams
+            AI-driven GDPR platform
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-              AI-powered GDPR compliance for modern organizations
-            </h1>
+            <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">AI-driven GDPR platform</h1>
             <p className="text-lg text-slate-600">
-              AURA-GDPR helps you manage data subject requests, DPIAs, ROPA, incidents and policies in one place – powered
-              by AI.
+              AURA-GDPR centralizes DSRs, ROPA, DPIA, incidents, and policies with AI assistance so you can stay compliant
+              without slowing down.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Button size="lg" className="px-6">
-              Start free trial
-            </Button>
-            <Button size="lg" variant="outline" className="px-6">
-              Talk to sales
-            </Button>
+            <Link to="/register">
+              <Button size="lg" className="px-6">
+                Start free trial
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button size="lg" variant="outline" className="px-6">
+                Book a demo
+              </Button>
+            </Link>
           </div>
-          <p className="text-sm text-slate-500">No installation. No credit card required for trial.</p>
+          <p className="text-sm text-slate-500">No credit card required. SOC2-ready infrastructure.</p>
           <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 sm:max-w-lg sm:grid-cols-3">
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <p className="font-semibold text-slate-900">AI audit-ready</p>
-              <p className="text-slate-500">Recommendations and checks.</p>
+              <p className="text-slate-500">Recommendations and evidence.</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-3">
               <p className="font-semibold text-slate-900">Fast onboarding</p>
@@ -59,47 +73,41 @@ const HeroSection: React.FC = () => {
               </div>
             </div>
             <div className="space-y-3">
-              <div className="grid grid-cols-3 gap-2">
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs font-semibold text-slate-500">Tasks</p>
-                  <p className="text-lg font-bold text-slate-900">32</p>
-                  <p className="text-xs text-slate-500">In progress</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-slate-900">AI audit overview</p>
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Live</span>
+              </div>
+              <p className="text-sm text-slate-600">
+                AURA scans DPIAs, ROPA, incidents, and policies to surface gaps before auditors and regulators do.
+              </p>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center justify-between text-sm text-slate-700">
+                  <span>DPIA coverage</span>
+                  <span className="font-semibold text-slate-900">92%</span>
                 </div>
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs font-semibold text-slate-500">Incidents</p>
-                  <p className="text-lg font-bold text-slate-900">3</p>
-                  <p className="text-xs text-slate-500">Investigating</p>
-                </div>
-                <div className="rounded-lg bg-slate-50 p-3">
-                  <p className="text-xs font-semibold text-slate-500">DPIAs</p>
-                  <p className="text-lg font-bold text-slate-900">12</p>
-                  <p className="text-xs text-slate-500">Draft</p>
+                <div className="mt-2 h-2 rounded-full bg-slate-200">
+                  <div className="h-2 w-[92%] rounded-full bg-sky-500" />
                 </div>
               </div>
-              <div className="rounded-xl border border-dashed border-slate-200 bg-gradient-to-r from-slate-50 to-sky-50 p-4">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="mt-0.5 h-5 w-5 text-sky-600" />
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-900">AI audit summary</p>
-                    <p className="text-sm text-slate-600">
-                      “Your ROPA and TOMs are complete. 2 DPIAs need review. One incident requires stakeholder update.”
-                    </p>
-                  </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm text-slate-700">
+                  <span>Open tasks</span>
+                  <span className="font-semibold text-slate-900">14</span>
                 </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-slate-200 p-3">
-                  <p className="text-xs font-semibold text-slate-500">Upcoming deadlines</p>
-                  <p className="text-sm text-slate-900">DSR response in 36h</p>
-                  <p className="text-xs text-amber-600">Priority</p>
+                <div className="flex items-center justify-between text-sm text-slate-700">
+                  <span>DSR SLA at risk</span>
+                  <span className="font-semibold text-amber-600">2</span>
                 </div>
-                <div className="rounded-lg border border-slate-200 p-3">
-                  <p className="text-xs font-semibold text-slate-500">Risk alerts</p>
-                  <p className="text-sm text-slate-900">Vendor DPIA renewal pending</p>
-                  <p className="text-xs text-slate-500">Low</p>
+                <div className="flex items-center justify-between text-sm text-slate-700">
+                  <span>Incidents under investigation</span>
+                  <span className="font-semibold text-rose-600">3</span>
                 </div>
               </div>
             </div>
+          </div>
+          <div className="mt-4 flex items-center gap-3 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
+            <Video className="h-5 w-5 text-sky-600" />
+            <span>Demo video placeholder — coming soon.</span>
           </div>
         </div>
       </div>
@@ -108,14 +116,12 @@ const HeroSection: React.FC = () => {
 };
 
 const SocialProof: React.FC = () => {
-  const logos = ['NordicBank', 'DataCloud', 'HealthSync', 'TrustWare', 'ComplyCo'];
+  const logos = ['Acme Health', 'Nimbus Cloud', 'Northwind', 'Atlas Bank', 'Evergreen', 'Orbit Retail'];
   return (
-    <section className="bg-white py-12">
+    <section className="bg-white py-10">
       <div className={container + ' space-y-6'}>
-        <p className="text-center text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Trusted by privacy-first teams
-        </p>
-        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
+        <p className="text-center text-sm font-semibold uppercase tracking-wider text-slate-500">Trusted by modern teams</p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {logos.map((logo) => (
             <div
               key={logo}
@@ -133,60 +139,69 @@ const SocialProof: React.FC = () => {
 const FeaturesSection: React.FC = () => {
   const features = [
     {
-      title: 'Data subject requests',
+      title: 'Data Subject Requests',
       icon: ClipboardList,
-      description: 'Standardized workflows, SLA tracking, and auditable responses for every DSR.',
+      description: 'Standardized workflows with SLA tracking and auditable responses.',
     },
     {
-      title: 'DPIA & risk assessments',
-      icon: ShieldCheck,
-      description: 'Collaborative assessments with templates, risk scoring, and mitigation tracking.',
-    },
-    {
-      title: 'Records of processing (ROPA)',
+      title: 'ROPA & DPIA',
       icon: FileText,
-      description: 'Keep processing activities up to date with ownership, systems, and purposes.',
+      description: 'Templates, ownership, and risk scoring for complete accountability.',
     },
     {
-      title: 'Incident management',
-      icon: Lock,
-      description: 'Log, investigate, and communicate breaches with timelines and status updates.',
-    },
-    {
-      title: 'Technical measures (TOMs)',
-      icon: CloudCog,
-      description: 'Document and monitor controls like encryption, access, and vendor security.',
-    },
-    {
-      title: 'AI audit engine',
+      title: 'AI Policy Generator',
       icon: Sparkles,
-      description: 'AI-powered findings, policy drafts, and reminders to keep you compliant.',
+      description: 'Draft and update policies automatically with AI assistance.',
+    },
+    {
+      title: 'Incident Management',
+      icon: Lock,
+      description: 'Log, investigate, and communicate breaches with clear timelines.',
+    },
+    {
+      title: 'Audit Engine',
+      icon: ShieldCheck,
+      description: 'Continuous checks with evidence to keep auditors satisfied.',
+    },
+    {
+      title: 'Multi-tenant & MSP-ready',
+      icon: CloudCog,
+      description: 'Isolated tenants with centralized control for managed service providers.',
     },
   ];
 
   return (
-    <section className="bg-slate-50 py-16 sm:py-20">
-      <div className={container + ' space-y-6'}>
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Everything you need for GDPR compliance</h2>
-          <p className="text-slate-600">Purpose-built modules that stay in sync with your team and regulators.</p>
+    <section className="bg-white py-16 sm:py-20" id="features">
+      <div className={container}>
+        <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">Platform</p>
+            <h2 className="text-3xl font-bold text-slate-900">Everything you need for GDPR</h2>
+            <p className="mt-2 max-w-2xl text-slate-600">
+              AURA-GDPR centralizes evidence, workflows, and AI so you can move faster than auditors.
+            </p>
+          </div>
+          <Link to="/contact">
+            <Button variant="outline" size="sm">
+              Talk to our team
+            </Button>
+          </Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {features.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={feature.title}
-                className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900">{feature.title}</h3>
-                <p className="mt-2 text-sm text-slate-600">{feature.description}</p>
+
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-sky-50 text-sky-600">
+                <feature.icon className="h-5 w-5" />
               </div>
-            );
-          })}
+              <h3 className="mt-4 text-lg font-semibold text-slate-900">{feature.title}</h3>
+              <p className="mt-2 text-sm text-slate-600">{feature.description}</p>
+              <div className="mt-3 flex items-center gap-2 text-sm text-sky-700">
+                <Check className="h-4 w-4" />
+                <span>AI-assisted</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -197,39 +212,34 @@ const HowItWorks: React.FC = () => {
   const steps = [
     {
       title: 'Connect your organization',
-      description: 'Create your tenant, invite teammates, and set roles for data owners and reviewers.',
+      description: 'Invite your team, set up workspaces, and import existing records or evidence.',
     },
     {
-      title: 'Document your GDPR landscape',
-      description: 'Add ROPA, DPIAs, incidents, TOMs, cookies, and policies with guided templates.',
+      title: 'Import or generate documentation',
+      description: 'Generate DPIAs, ROPA, policies, and incident timelines with AI templates.',
     },
     {
-      title: 'Let AI support your compliance',
-      description: 'Use AI to draft policies, highlight gaps, and surface recommendations automatically.',
-    },
-    {
-      title: 'Stay on top of deadlines',
-      description: 'Tasks, notifications, and reminders keep responses on track and audit-ready.',
+      title: 'Monitor and fix risks with AI',
+      description: 'Continuous checks with alerts for deadlines, gaps, and incidents.',
     },
   ];
-
   return (
-    <section className="bg-white py-16 sm:py-20">
-      <div className={container + ' space-y-6'}>
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">How AURA-GDPR works</h2>
-          <p className="text-slate-600">A guided flow from onboarding to continuous compliance.</p>
+    <section className="bg-slate-50 py-16 sm:py-20">
+      <div className={container + ' space-y-10'}>
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">How it works</p>
+          <h2 className="text-3xl font-bold text-slate-900">Stand up a GDPR program in days, not months</h2>
+          <p className="mt-2 max-w-2xl text-slate-600">
+            Configure once, collaborate with your teams, and keep everything in sync across auditors and regulators.
+          </p>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-3">
           {steps.map((step, index) => (
-            <div
-              key={step.title}
-              className="relative flex h-full flex-col rounded-xl border border-slate-200 bg-slate-50 p-5 shadow-sm"
-            >
-              <div className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-sky-600 text-sm font-semibold text-white">
+            <div key={step.title} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-600 text-sm font-semibold text-white">
                 {index + 1}
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">{step.title}</h3>
+              <h3 className="mt-4 text-lg font-semibold text-slate-900">{step.title}</h3>
               <p className="mt-2 text-sm text-slate-600">{step.description}</p>
             </div>
           ))}
@@ -239,73 +249,78 @@ const HowItWorks: React.FC = () => {
   );
 };
 
-type PricingPlan = {
-  name: string;
-  price: string;
-  description: string;
-  bullets: string[];
-  highlighted?: boolean;
-};
-
 const PricingPreview: React.FC = () => {
-  const plans: PricingPlan[] = [
+  const plans = [
     {
       name: 'Free',
-      price: 'From €0/month',
-      description: 'For small teams who want to explore the platform.',
-      bullets: ['1 tenant', 'Core modules with limits', 'Community support'],
+      price: '$0',
+      description: 'Start with the basics and grow at your pace.',
+      features: ['1 workspace', 'DSR inbox', 'Basic templates'],
+      cta: 'Get started',
+      popular: false,
     },
     {
       name: 'Pro',
-      price: 'From €249/month',
-      description: 'For organizations that want full automation.',
-      bullets: ['Full access to modules', 'AI audit and drafting tools', 'Unlimited users & tasks'],
-      highlighted: true,
+      price: '$59',
+      description: 'For privacy teams that need automation and AI.',
+      features: ['Unlimited workspaces', 'AI policy drafts', 'Incident workflow', 'ROPA & DPIA builder'],
+      cta: 'Start free trial',
+      popular: true,
     },
     {
       name: 'Enterprise',
-      price: 'Custom pricing',
-      description: 'For large or regulated organizations.',
-      bullets: ['SSO & SCIM', 'Dedicated support team', 'Custom hosting and controls'],
+      price: 'Talk to us',
+      description: 'For multi-tenant deployments and enterprise support.',
+      features: ['MSP-ready', 'Dedicated CSM', 'Custom AI models', 'Private cloud'],
+      cta: 'Contact sales',
+      popular: false,
     },
   ];
 
   return (
-    <section className="bg-slate-50 py-16 sm:py-20">
-      <div className={container + ' space-y-6'}>
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Simple pricing for serious compliance</h2>
-          <p className="text-slate-600">Pick a plan that fits your maturity. Upgrade anytime.</p>
+    <section className="bg-white py-16 sm:py-20" id="pricing">
+      <div className={container + ' space-y-10'}>
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">Pricing</p>
+            <h2 className="text-3xl font-bold text-slate-900">Pick a plan that matches your GDPR maturity</h2>
+            <p className="mt-2 text-slate-600">Transparent pricing for teams of all sizes.</p>
+          </div>
+          <Link to="/contact">
+            <Button size="sm" variant="outline">
+              Contact sales
+            </Button>
+          </Link>
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`flex h-full flex-col rounded-2xl border bg-white p-6 shadow-sm ${
-                plan.highlighted ? 'border-sky-500 shadow-sky-100 ring-2 ring-sky-200' : 'border-slate-200'
+              className={`flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ${
+                plan.popular ? 'ring-2 ring-sky-500 ring-offset-2' : ''
               }`}
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-slate-900">{plan.name}</h3>
-                {plan.highlighted && (
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">Popular</span>
+                {plan.popular && (
+                  <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">Popular</span>
                 )}
               </div>
               <p className="mt-2 text-sm text-slate-600">{plan.description}</p>
-              <p className="mt-4 text-2xl font-bold text-slate-900">{plan.price}</p>
-              <div className="mt-4 space-y-2 text-sm text-slate-700">
-                {plan.bullets.map((bullet) => (
-                  <div key={bullet} className="flex items-start gap-2">
-                    <Check className="mt-0.5 h-4 w-4 text-sky-600" />
-                    <span>{bullet}</span>
-                  </div>
+              <p className="mt-4 text-3xl font-bold text-slate-900">{plan.price}</p>
+              <ul className="mt-4 space-y-2 text-sm text-slate-700">
+                {plan.features.map((feature) => (
+                  <li key={feature} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-sky-600" />
+                    <span>{feature}</span>
+                  </li>
                 ))}
-              </div>
-              <div className="mt-6">
-                <Button className="w-full" variant={plan.highlighted ? 'default' : 'outline'}>
-                  {plan.name === 'Free' ? 'Get started' : 'Contact sales'}
+              </ul>
+              <Link to={plan.name === 'Enterprise' ? '/contact' : '/register'} className="mt-auto">
+                <Button className="mt-4 w-full" variant={plan.popular ? 'default' : 'outline'}>
+                  {plan.cta}
                 </Button>
-              </div>
+              </Link>
             </div>
           ))}
         </div>
@@ -316,47 +331,77 @@ const PricingPreview: React.FC = () => {
 
 const FaqSection: React.FC = () => {
   const faqs = [
-    {
-      question: 'Do I need a lawyer to use AURA-GDPR?',
-      answer: 'AURA-GDPR guides you with templates and AI assistance. You can also collaborate with your legal team.',
-    },
-    {
-      question: 'Where is my data stored?',
-      answer: 'Data is hosted in the EU with encryption in transit and at rest. Enterprise hosting options are available.',
-    },
-    {
-      question: 'Can I export my data?',
-      answer: 'Yes. You can export records, tasks, and reports at any time for audits or backups.',
-    },
-    {
-      question: 'Is AURA-GDPR suitable for small companies?',
-      answer:
-        'Absolutely. Start with the Free plan, then scale to Pro or Enterprise as your compliance program grows.',
-    },
-    {
-      question: 'Does AURA-GDPR support deadlines and reminders?',
-      answer: 'Tasks, notifications, and timelines keep you on schedule for DSRs, DPIAs, and incident reports.',
-    },
-    {
-      question: 'How does the AI audit engine work?',
-      answer: 'It reviews your inputs, highlights gaps, drafts policies, and recommends actions based on best practices.',
-    },
+    { question: 'How long does it take to get started?', answer: 'Most teams launch within one week using our templates.' },
+    { question: 'Do you offer multi-tenant deployments?', answer: 'Yes, AURA-GDPR is MSP-ready with tenant isolation.' },
+    { question: 'Is there an API?', answer: 'Yes, the platform exposes APIs for incidents, tasks, and evidence ingestion.' },
+    { question: 'Can I import existing records?', answer: 'Yes, import CSV, JSON, or connect via API.' },
+    { question: 'Do you support SOC2 or ISO27001?', answer: 'Yes, we provide evidence mapping and audit support.' },
+    { question: 'Where is data hosted?', answer: 'Deploy in EU regions or your own cloud with private tenancy.' },
+    { question: 'Can I try before buying?', answer: 'Yes, start a free trial with AI features enabled.' },
+    { question: 'Do you help with DPIAs?', answer: 'Yes, we provide templates and AI drafting to speed up DPIAs.' },
   ];
 
+  const [openIndex, setOpenIndex] = React.useState<number | null>(0);
+
+  return (
+    <section className="bg-slate-50 py-16 sm:py-20" id="faq">
+      <div className={container + ' space-y-8'}>
+        <div className="space-y-3">
+          <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">FAQ</p>
+          <h2 className="text-3xl font-bold text-slate-900">Common questions</h2>
+          <p className="max-w-2xl text-slate-600">
+            Everything you need to know about AURA-GDPR pricing, deployment, and features.
+          </p>
+        </div>
+        <div className="space-y-4">
+          {faqs.map((faq, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div
+                key={faq.question}
+                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md"
+              >
+                <button
+                  className="flex w-full items-center justify-between text-left"
+                  onClick={() => setOpenIndex(isOpen ? null : idx)}
+                >
+                  <span className="text-base font-semibold text-slate-900">{faq.question}</span>
+                  <span className="text-slate-500">{isOpen ? '−' : '+'}</span>
+                </button>
+                {isOpen && <p className="mt-3 text-sm text-slate-600">{faq.answer}</p>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const ContactCta: React.FC = () => {
   return (
     <section className="bg-white py-16 sm:py-20">
-      <div className={container + ' space-y-6'}>
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">Frequently asked questions</h2>
-          <p className="text-slate-600">Answers to common questions about AURA-GDPR.</p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {faqs.map((faq) => (
-            <div key={faq.question} className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-              <p className="text-base font-semibold text-slate-900">{faq.question}</p>
-              <p className="mt-2 text-sm text-slate-600">{faq.answer}</p>
-            </div>
-          ))}
+      <div className={container}>
+        <div className="flex flex-col items-start gap-6 rounded-2xl border border-slate-200 bg-gradient-to-r from-sky-50 to-indigo-50 p-8 shadow-sm md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">Get started</p>
+            <h3 className="text-2xl font-bold text-slate-900">Ready to get compliant?</h3>
+            <p className="mt-2 max-w-xl text-slate-600">
+              Talk with our team to see how AURA-GDPR fits your compliance program and AI roadmap.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/contact">
+              <Button size="lg" className="px-6">
+                Contact us
+              </Button>
+            </Link>
+            <Link to="/register">
+              <Button size="lg" variant="outline" className="px-6">
+                Start free trial
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </section>
@@ -366,41 +411,39 @@ const FaqSection: React.FC = () => {
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   return (
-    <footer className="border-t border-slate-200 bg-slate-50 py-12">
-      <div className={container + ' grid gap-8 sm:grid-cols-2 lg:grid-cols-4'}>
-        <div>
+    <footer className="bg-white py-12">
+      <div className={container + ' space-y-6'}>
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-600 text-white">AG</div>
-            <p className="text-lg font-semibold text-slate-900">AURA-GDPR</p>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-600 text-lg font-bold text-white">
+              AG
+            </div>
+            <span className="text-xl font-semibold text-slate-900">AURA-GDPR</span>
           </div>
-          <p className="mt-3 text-sm text-slate-600">
-            GDPR compliance platform to keep your organization aligned, secure, and audit-ready.
-          </p>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+            <Link to="/blog" className="hover:text-slate-900">
+              Blog
+            </Link>
+            <Link to="/contact" className="hover:text-slate-900">
+              Contact
+            </Link>
+            <Link to="/login" className="hover:text-slate-900">
+              Sign in
+            </Link>
+          </div>
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-slate-900">Product</h4>
-          <ul className="mt-3 space-y-2 text-sm text-slate-600">
-            <li>Features</li>
-            <li>Pricing</li>
-            <li>Security</li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold text-slate-900">Company</h4>
-          <ul className="mt-3 space-y-2 text-sm text-slate-600">
-            <li>About</li>
-            <li>Contact</li>
-          </ul>
-        </div>
-        <div>
-          <h4 className="text-sm font-semibold text-slate-900">Legal</h4>
-          <ul className="mt-3 space-y-2 text-sm text-slate-600">
-            <li><a href="#" className="hover:text-slate-900">Privacy policy</a></li>
-            <li><a href="#" className="hover:text-slate-900">Terms</a></li>
-          </ul>
+        <div className="grid gap-4 text-sm text-slate-600 sm:grid-cols-3">
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-sky-600" />
+            <span>hello@aura-gdpr.com</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-sky-600" />
+            <span>+1 (555) 123-4567</span>
+          </div>
+          <div className="text-slate-500 sm:text-right">© {currentYear} AURA-GDPR. All rights reserved.</div>
         </div>
       </div>
-      <div className="mt-8 text-center text-xs text-slate-500">© {currentYear} AURA-GDPR. All rights reserved.</div>
     </footer>
   );
 };
@@ -417,10 +460,12 @@ const LandingPage: React.FC = () => {
             <span className="text-xl font-semibold text-slate-900">AURA-GDPR</span>
           </div>
           <div className="hidden items-center gap-3 sm:flex">
-            <a href="/login" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
+            <Link to="/login" className="text-sm font-semibold text-slate-700 hover:text-slate-900">
               Log in
-            </a>
-            <Button size="sm">Start free trial</Button>
+            </Link>
+            <Link to="/register">
+              <Button size="sm">Start free trial</Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -432,6 +477,7 @@ const LandingPage: React.FC = () => {
         <HowItWorks />
         <PricingPreview />
         <FaqSection />
+        <ContactCta />
       </main>
 
       <Footer />
