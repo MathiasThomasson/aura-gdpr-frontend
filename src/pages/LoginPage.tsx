@@ -14,7 +14,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useToast } from '@/components/ui/use-toast';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +21,6 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
-  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,11 +28,7 @@ const LoginPage: React.FC = () => {
     try {
       await login(email, password);
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error?.message ?? 'Unable to sign in. Please try again.',
-      });
+      // Errors are handled and surfaced via AuthContext (toast + message).
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +95,7 @@ const LoginPage: React.FC = () => {
                 className="w-full bg-gradient-to-r from-sky-500 to-purple-600 hover:from-sky-600 hover:to-purple-700 text-white font-semibold py-3 text-base"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </CardContent>

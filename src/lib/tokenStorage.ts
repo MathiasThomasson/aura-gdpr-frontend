@@ -5,7 +5,8 @@ const USER_KEY = 'aura-user';
 export type StoredUser = {
   email: string;
   role?: string;
-  tenantId?: string;
+  tenantId?: number;
+  id?: number;
   [key: string]: unknown;
 };
 

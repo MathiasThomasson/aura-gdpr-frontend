@@ -4,6 +4,7 @@ import api from '@/lib/apiClient';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AuthResponse,
+  LoginResponse,
   User,
   mapAuthResponse,
   refreshAuthTokens,
@@ -126,17 +127,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(
     async (email: string, password: string) => {
-      const res = await api.post<AuthResponse>('/auth/login', { email, password });
-      const { tokens, user: nextUser } = mapAuthResponse(res.data);
-      persistSession(tokens, nextUser);
-      setAccessToken(tokens.accessToken);
-      setIsAuthenticated(true);
-      setUserState(nextUser ?? null);
-      toast({ title: 'Login Successful', description: 'Welcome back!' });
-      navigate('/app/dashboard', { replace: true });
-      return nextUser ?? null;
+      try {
+        const res = await api.post<LoginResponse>('/auth/login', { email, password });
+        const { tokens, user: mappedUser } = mapAuthResponse(res.data, email);
+        const fallbackUser =
+          mappedUser ?? {
+            email,
+            role: res.data.role,
+            tenantId: res.data.tenant_id,
+            id: res.data.user_id,
+          };
+        setSession(tokens, fallbackUser);
+        toast({ title: 'Login Successful', description: 'Welcome back!' });
+        navigate('/app/dashboard', { replace: true });
+        return fallbackUser;
+      } catch (error: any) {
+        const message =
+          error?.response?.data?.error ||
+          error?.response?.data?.detail ||
+          error?.message ||
+          'Login failed. Please check your email and password or try again later.';
+        toast({ variant: 'destructive', title: 'Login failed', description: message });
+        throw error;
+      }
     },
-    [navigate, toast]
+    [navigate, setSession, toast]
   );
 
   const register = useCallback(
