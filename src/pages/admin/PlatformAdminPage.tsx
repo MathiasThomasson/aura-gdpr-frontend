@@ -61,6 +61,10 @@ const PlatformAdminPage: React.FC = () => {
   const [accessDenied, setAccessDenied] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<string>('overview');
   const [tenantSearch, setTenantSearch] = React.useState('');
+  const [selectedTenantId, setSelectedTenantId] = React.useState<number | null>(null);
+  const [selectedTenant, setSelectedTenant] = React.useState<PlatformTenantListItem | null>(null);
+  const [tenantDetailLoading, setTenantDetailLoading] = React.useState(false);
+  const [tenantDetailError, setTenantDetailError] = React.useState<string | null>(null);
 
   const emailNormalized = user?.email?.toLowerCase() ?? '';
   const isPlatformAdmin = Boolean(user?.isPlatformOwner || platformOwnerEmailSet.has(emailNormalized));
@@ -123,6 +127,27 @@ const PlatformAdminPage: React.FC = () => {
   });
 
   const systemHealth = overview?.system_health ?? {};
+  const closeTenantDetail = () => {
+    setSelectedTenantId(null);
+    setSelectedTenant(null);
+    setTenantDetailError(null);
+  };
+
+  const openTenantDetail = async (tenantId: number) => {
+    setSelectedTenantId(tenantId);
+    setTenantDetailLoading(true);
+    setTenantDetailError(null);
+    try {
+      const res = await api.get<PlatformTenantListItem>(`/api/admin/platform/tenants/${tenantId}`);
+      const detail = res.data ?? null;
+      setSelectedTenant(detail);
+    } catch (err: any) {
+      setTenantDetailError(err?.message ?? 'Failed to load tenant detail');
+      setSelectedTenant(null);
+    } finally {
+      setTenantDetailLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -347,15 +372,15 @@ const PlatformAdminPage: React.FC = () => {
                           <div className="col-span-2 text-sm text-slate-700">{tenant.plan}</div>
                           <div className="col-span-2 text-sm text-slate-700">{tenant.status}</div>
                           <div className="col-span-2 text-sm text-slate-700">{formatDate(tenant.created_at)}</div>
-                          <div className="col-span-3 flex flex-wrap gap-2">
-                            <Button size="sm" variant="secondary" disabled>
+                      <div className="col-span-3 flex flex-wrap gap-2">
+                            <Button size="sm" variant="secondary" onClick={() => openTenantDetail(tenant.id as number)}>
                               View
                             </Button>
                             <Button size="sm" variant="secondary" disabled>
-                              Impersonate
+                              Impersonate (coming soon)
                             </Button>
                             <Button size="sm" variant="destructive" disabled>
-                              Suspend
+                              Suspend (coming soon)
                             </Button>
                           </div>
                         </div>
@@ -465,6 +490,70 @@ const PlatformAdminPage: React.FC = () => {
             </Card>
           )}
         </>
+      )}
+
+      {selectedTenantId !== null && (
+        <div className="fixed inset-0 z-40 flex items-start justify-end bg-black/30">
+          <div className="h-full w-full max-w-md overflow-y-auto bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b px-4 py-3">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Tenant detail</p>
+                <h3 className="text-lg font-semibold text-slate-900">Tenant #{selectedTenantId}</h3>
+              </div>
+              <Button size="sm" variant="secondary" onClick={closeTenantDetail}>
+                Close
+              </Button>
+            </div>
+            <div className="space-y-3 p-4">
+              {tenantDetailLoading ? (
+                <>
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-40" />
+                </>
+              ) : tenantDetailError ? (
+                <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                  {tenantDetailError}
+                </div>
+              ) : selectedTenant ? (
+                <>
+                  <div>
+                    <p className="text-xs font-semibold uppercase text-slate-500">Name</p>
+                    <p className="text-sm font-semibold text-slate-900">{selectedTenant.name}</p>
+                    <p className="text-xs text-slate-500">ID: {selectedTenant.id}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Plan</p>
+                      <p className="font-semibold text-slate-900">{selectedTenant.plan}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Status</p>
+                      <p className="font-semibold text-slate-900">{selectedTenant.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Created</p>
+                      <p className="font-semibold text-slate-900">{formatDate(selectedTenant.created_at)}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Users</p>
+                      <p className="font-semibold text-slate-900">{selectedTenant.users ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Next billing</p>
+                      <p className="font-semibold text-slate-900">{formatDate(selectedTenant.next_billing_date)}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-dashed border-slate-200 p-3 text-sm text-slate-600">
+                    Tenant-level actions (impersonate, suspend, billing) will be added here.
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-slate-600">No tenant detail.</p>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
