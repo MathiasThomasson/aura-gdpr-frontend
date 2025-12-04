@@ -61,7 +61,7 @@ const OnboardingPage: React.FC = () => {
 
   React.useEffect(() => {
     if (isPlatformOwner) {
-      navigate('/admin', { replace: true });
+      navigate('/platform-admin', { replace: true });
     }
   }, [isPlatformOwner, navigate]);
 

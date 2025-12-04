@@ -46,8 +46,17 @@ import PlatformOwnerAdminPage from '@/pages/PlatformOwnerAdminPage';
 import PlatformAdminPage from '@/pages/admin/PlatformAdminPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isPlatformOwner } = useAuth();
+  const location = useLocation();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (
+    isPlatformOwner &&
+    location.pathname !== '/platform-admin' &&
+    location.pathname !== '/admin' &&
+    location.pathname !== '/login'
+  ) {
+    return <Navigate to="/platform-admin" replace />;
+  }
   return <>{children}</>;
 };
 
@@ -57,7 +66,7 @@ const OnboardingGuard = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   if (isPlatformOwner) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/platform-admin" replace />;
   }
 
   if (loading) {

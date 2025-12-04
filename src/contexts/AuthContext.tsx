@@ -175,7 +175,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const platformOwner = computePlatformOwner(fallbackUser);
         setIsPlatformOwner(platformOwner);
         toast({ title: 'Login Successful', description: 'Welcome back!' });
-        navigate(platformOwner ? '/admin' : '/app/dashboard', { replace: true });
+        navigate(platformOwner ? '/platform-admin' : '/app/dashboard', { replace: true });
         return fallbackUser;
       } catch (error: any) {
         const message =
