@@ -33,6 +33,10 @@ import {
   AIUsageSummary,
   LogItem,
   JobStatus,
+  WebhookItem,
+  ApiKeyItem,
+  FeatureFlagItem,
+  GlobalConfig,
 } from '@/types/admin';
 
 const platformOwnerEmailSet = new Set(
@@ -97,6 +101,16 @@ const PlatformAdminPage: React.FC = () => {
   const [jobs, setJobs] = React.useState<JobStatus[]>([]);
   const [logsLoading, setLogsLoading] = React.useState(false);
   const [logsError, setLogsError] = React.useState<string | null>(null);
+  const [webhooks, setWebhooks] = React.useState<WebhookItem[]>([]);
+  const [webhooksLoading, setWebhooksLoading] = React.useState(false);
+  const [webhooksError, setWebhooksError] = React.useState<string | null>(null);
+  const [apiKeys, setApiKeys] = React.useState<ApiKeyItem[]>([]);
+  const [apiKeysLoading, setApiKeysLoading] = React.useState(false);
+  const [apiKeysError, setApiKeysError] = React.useState<string | null>(null);
+  const [featureFlags, setFeatureFlags] = React.useState<FeatureFlagItem[]>([]);
+  const [config, setConfig] = React.useState<GlobalConfig | null>(null);
+  const [flagsLoading, setFlagsLoading] = React.useState(false);
+  const [flagsError, setFlagsError] = React.useState<string | null>(null);
 
   const emailNormalized = user?.email?.toLowerCase() ?? '';
   const isPlatformAdmin = Boolean(user?.isPlatformOwner || platformOwnerEmailSet.has(emailNormalized));
@@ -220,12 +234,34 @@ const PlatformAdminPage: React.FC = () => {
         setLogsLoading(false);
       }
     };
+    const loadWebhooks = async () => {
+      setWebhooksLoading(true);
+      setWebhooksError(null);
+      try {
+        const [whRes, apiKeyRes, flagsRes, cfgRes] = await Promise.all([
+          api.get<WebhookItem[]>('/api/admin/platform/webhooks'),
+          api.get<ApiKeyItem[]>('/api/admin/platform/api-keys'),
+          api.get<FeatureFlagItem[]>('/api/admin/platform/feature-flags'),
+          api.get<GlobalConfig>('/api/admin/platform/config'),
+        ]);
+        setWebhooks(whRes.data ?? []);
+        setApiKeys(apiKeyRes.data ?? []);
+        setFeatureFlags(flagsRes.data ?? []);
+        setConfig(cfgRes.data ?? null);
+      } catch (err: any) {
+        setWebhooksError(err?.message ?? 'Failed to load webhooks/API keys/config');
+      } finally {
+        setWebhooksLoading(false);
+        setFlagsLoading(false);
+      }
+    };
 
     loadUsers();
     loadPlans();
     loadPaypal();
     loadAi();
     loadLogs();
+    loadWebhooks();
   }, [isPlatformAdmin]);
 
   if (!isPlatformAdmin) {
@@ -811,8 +847,94 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Manage outgoing webhooks and partner API keys.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  Webhook configuration and API key management will appear here.
+                {webhooksError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {webhooksError}
+                  </div>
+                )}
+                <div className="rounded-md border border-slate-200 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">Webhooks</p>
+                    <Button size="sm" variant="secondary" disabled>
+                      Add webhook
+                    </Button>
+                  </div>
+                  <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 text-sm">
+                    <div className="grid grid-cols-5 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      <div>Name</div>
+                      <div>Target</div>
+                      <div>Events</div>
+                      <div>Status</div>
+                      <div>Actions</div>
+                    </div>
+                    <div className="divide-y divide-slate-200 bg-white">
+                      {webhooksLoading ? (
+                        <div className="p-3">
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ) : webhooks.length === 0 ? (
+                        <div className="p-3 text-slate-600 text-xs">No webhooks.</div>
+                      ) : (
+                        webhooks.map((wh) => (
+                          <div key={wh.id} className="grid grid-cols-5 gap-2 px-3 py-2 text-xs text-slate-700">
+                            <div className="font-semibold text-slate-900">{wh.name}</div>
+                            <div className="truncate">{wh.target_url}</div>
+                            <div>{wh.events.join(', ')}</div>
+                            <div>{wh.status}</div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="ghost" disabled>
+                                Edit
+                              </Button>
+                              <Button size="sm" variant="ghost" disabled>
+                                Test
+                              </Button>
+                              <Button size="sm" variant="destructive" disabled>
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 rounded-md border border-slate-200 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-slate-800">API Keys</p>
+                    <Button size="sm" variant="secondary" disabled>
+                      Create key
+                    </Button>
+                  </div>
+                  <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 text-sm">
+                    <div className="grid grid-cols-6 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      <div>Name</div>
+                      <div>Key ID</div>
+                      <div>Scopes</div>
+                      <div>Created</div>
+                      <div>Last used</div>
+                      <div>Status</div>
+                    </div>
+                    <div className="divide-y divide-slate-200 bg-white">
+                      {apiKeysLoading ? (
+                        <div className="p-3">
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      ) : apiKeys.length === 0 ? (
+                        <div className="p-3 text-slate-600 text-xs">No API keys.</div>
+                      ) : (
+                        apiKeys.map((k) => (
+                          <div key={k.id} className="grid grid-cols-6 gap-2 px-3 py-2 text-xs text-slate-700">
+                            <div className="font-semibold text-slate-900">{k.name}</div>
+                            <div>{k.key_id}</div>
+                            <div>{k.scopes.join(', ')}</div>
+                            <div>{formatDate(k.created_at)}</div>
+                            <div>{k.last_used ? formatDate(k.last_used) : '—'}</div>
+                            <div>{k.status}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -825,8 +947,60 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Toggle features and adjust global configuration.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  Feature flags and global configuration controls will appear here.
+                {flagsError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {flagsError}
+                  </div>
+                )}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-md border border-slate-200 p-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-semibold text-slate-800">Feature flags</p>
+                      <Button size="sm" variant="secondary" disabled>
+                        Save
+                      </Button>
+                    </div>
+                    <div className="mt-2 space-y-2">
+                      {flagsLoading ? (
+                        <Skeleton className="h-20 w-full" />
+                      ) : featureFlags.length === 0 ? (
+                        <p className="text-xs text-slate-600">No flags.</p>
+                      ) : (
+                        featureFlags.map((f) => (
+                          <div key={f.name} className="rounded border border-slate-200 p-2 text-sm">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-slate-900">{f.name}</p>
+                                <p className="text-xs text-slate-600">{f.description ?? '—'}</p>
+                              </div>
+                              <Badge variant={f.status ? 'default' : 'secondary'}>
+                                {f.status ? 'On' : 'Off'}
+                              </Badge>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                  <div className="rounded-md border border-slate-200 p-3 text-sm">
+                    <p className="text-sm font-semibold text-slate-800">Global config</p>
+                    {flagsLoading ? (
+                      <Skeleton className="h-24 w-full" />
+                    ) : (
+                      <div className="mt-2 space-y-2">
+                        <p>Default AI model: {config?.default_ai_model ?? 'gpt-4o'}</p>
+                        <p>Max upload size: {config?.max_upload_mb ?? 20} MB</p>
+                        <p>Global rate limit: {config?.global_rate_limit_rpm ?? 1000} rpm</p>
+                        <p>DSR deadline: {config?.dsr_default_deadline_days ?? 30} days</p>
+                        <p>Monthly audit day: {config?.monthly_audit_day ?? 1}</p>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="secondary" disabled>
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>

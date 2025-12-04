@@ -112,3 +112,37 @@ export type JobStatus = {
   status: string;
   message?: string | null;
 };
+
+export type WebhookItem = {
+  id: string;
+  name: string;
+  target_url: string;
+  events: string[];
+  status: string;
+  last_delivery_status?: string | null;
+};
+
+export type ApiKeyItem = {
+  id: string;
+  name: string;
+  key_id: string;
+  created_at: string;
+  last_used?: string | null;
+  scopes: string[];
+  status: string;
+};
+
+export type FeatureFlagItem = {
+  name: string;
+  description?: string | null;
+  status: boolean;
+  scope: string;
+};
+
+export type GlobalConfig = {
+  default_ai_model: string;
+  max_upload_mb: number;
+  global_rate_limit_rpm: number;
+  dsr_default_deadline_days: number;
+  monthly_audit_day: number;
+};
