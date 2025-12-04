@@ -2,13 +2,17 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import {
   AlertTriangle,
+  Ban,
   BarChart3,
   Building2,
+  CheckCircle2,
   FileSignature,
   Inbox,
   Loader2,
   ServerCog,
   ShieldAlert,
+  UserMinus,
+  UserPlus,
   Users,
   Zap,
 } from 'lucide-react';
@@ -19,7 +23,17 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { PlatformOverviewResponse, PlatformTenantListItem } from '@/types/admin';
+import {
+  PlatformOverviewResponse,
+  PlatformTenantListItem,
+  PlatformUserItem,
+  PlatformPlan,
+  PayPalConfig,
+  PayPalWebhookEvent,
+  AIUsageSummary,
+  LogItem,
+  JobStatus,
+} from '@/types/admin';
 
 const platformOwnerEmailSet = new Set(
   (import.meta.env.VITE_PLATFORM_OWNER_EMAILS ?? 'owner1@aura-gdpr.se,admin@aura-gdpr.se')
@@ -65,6 +79,24 @@ const PlatformAdminPage: React.FC = () => {
   const [selectedTenant, setSelectedTenant] = React.useState<PlatformTenantListItem | null>(null);
   const [tenantDetailLoading, setTenantDetailLoading] = React.useState(false);
   const [tenantDetailError, setTenantDetailError] = React.useState<string | null>(null);
+  const [users, setUsers] = React.useState<PlatformUserItem[]>([]);
+  const [usersLoading, setUsersLoading] = React.useState(false);
+  const [usersError, setUsersError] = React.useState<string | null>(null);
+  const [userSearch, setUserSearch] = React.useState('');
+  const [plans, setPlans] = React.useState<PlatformPlan[]>([]);
+  const [plansLoading, setPlansLoading] = React.useState(false);
+  const [plansError, setPlansError] = React.useState<string | null>(null);
+  const [paypalConfig, setPaypalConfig] = React.useState<PayPalConfig | null>(null);
+  const [paypalEvents, setPaypalEvents] = React.useState<PayPalWebhookEvent[]>([]);
+  const [paypalLoading, setPaypalLoading] = React.useState(false);
+  const [paypalError, setPaypalError] = React.useState<string | null>(null);
+  const [aiUsage, setAiUsage] = React.useState<AIUsageSummary | null>(null);
+  const [aiLoading, setAiLoading] = React.useState(false);
+  const [aiError, setAiError] = React.useState<string | null>(null);
+  const [logs, setLogs] = React.useState<LogItem[]>([]);
+  const [jobs, setJobs] = React.useState<JobStatus[]>([]);
+  const [logsLoading, setLogsLoading] = React.useState(false);
+  const [logsError, setLogsError] = React.useState<string | null>(null);
 
   const emailNormalized = user?.email?.toLowerCase() ?? '';
   const isPlatformAdmin = Boolean(user?.isPlatformOwner || platformOwnerEmailSet.has(emailNormalized));
@@ -110,6 +142,91 @@ const PlatformAdminPage: React.FC = () => {
 
     load();
   }, [isPlatformAdmin, toast]);
+
+  React.useEffect(() => {
+    if (!isPlatformAdmin) return;
+    const loadUsers = async () => {
+      setUsersLoading(true);
+      setUsersError(null);
+      try {
+        const res = await api.get<PlatformUserItem[]>('/api/admin/platform/users', {
+          validateStatus: (s) => (s >= 200 && s < 300) || s === 403,
+        });
+        if (res.status === 403) {
+          setUsers([]);
+          setUsersError('Access denied');
+          return;
+        }
+        setUsers(res.data ?? []);
+      } catch (err: any) {
+        setUsersError(err?.message ?? 'Failed to load users');
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+    const loadPlans = async () => {
+      setPlansLoading(true);
+      setPlansError(null);
+      try {
+        const res = await api.get<PlatformPlan[]>('/api/admin/platform/plans');
+        setPlans(res.data ?? []);
+      } catch (err: any) {
+        setPlansError(err?.message ?? 'Failed to load plans');
+      } finally {
+        setPlansLoading(false);
+      }
+    };
+    const loadPaypal = async () => {
+      setPaypalLoading(true);
+      setPaypalError(null);
+      try {
+        const [cfg, events] = await Promise.all([
+          api.get<PayPalConfig>('/api/admin/platform/paypal/config'),
+          api.get<PayPalWebhookEvent[]>('/api/admin/platform/paypal/webhook-events'),
+        ]);
+        setPaypalConfig(cfg.data ?? null);
+        setPaypalEvents(events.data ?? []);
+      } catch (err: any) {
+        setPaypalError(err?.message ?? 'Failed to load PayPal data');
+      } finally {
+        setPaypalLoading(false);
+      }
+    };
+    const loadAi = async () => {
+      setAiLoading(true);
+      setAiError(null);
+      try {
+        const res = await api.get<AIUsageSummary>('/api/admin/platform/ai/usage');
+        setAiUsage(res.data ?? null);
+      } catch (err: any) {
+        setAiError(err?.message ?? 'Failed to load AI usage');
+      } finally {
+        setAiLoading(false);
+      }
+    };
+    const loadLogs = async () => {
+      setLogsLoading(true);
+      setLogsError(null);
+      try {
+        const [logRes, jobRes] = await Promise.all([
+          api.get<LogItem[]>('/api/admin/platform/logs'),
+          api.get<JobStatus[]>('/api/admin/platform/jobs'),
+        ]);
+        setLogs(logRes.data ?? []);
+        setJobs(jobRes.data ?? []);
+      } catch (err: any) {
+        setLogsError(err?.message ?? 'Failed to load logs/jobs');
+      } finally {
+        setLogsLoading(false);
+      }
+    };
+
+    loadUsers();
+    loadPlans();
+    loadPaypal();
+    loadAi();
+    loadLogs();
+  }, [isPlatformAdmin]);
 
   if (!isPlatformAdmin) {
     toast({
@@ -395,13 +512,80 @@ const PlatformAdminPage: React.FC = () => {
           {activeTab === 'users' && (
             <Card className="shadow-sm">
               <CardHeader>
-                <CardTitle>Users</CardTitle>
-                <CardDescription>Global user view (coming soon).</CardDescription>
+                <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <CardTitle>Users</CardTitle>
+                    <CardDescription>Global user view across all tenants.</CardDescription>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search email..."
+                    className="rounded-md border border-slate-200 px-3 py-2 text-sm"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                  />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  Global user inspection and disable/enable controls will appear here.
-                </div>
+                {usersError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {usersError}
+                  </div>
+                )}
+                {usersLoading ? (
+                  <div className="space-y-2">
+                    {[0, 1, 2].map((idx) => (
+                      <div key={`user-skel-${idx}`} className="grid grid-cols-12 gap-3 rounded-md border p-3">
+                        <Skeleton className="col-span-4 h-4" />
+                        <Skeleton className="col-span-2 h-4" />
+                        <Skeleton className="col-span-3 h-4" />
+                        <Skeleton className="col-span-2 h-4" />
+                        <Skeleton className="col-span-1 h-8" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border border-slate-200">
+                    <div className="grid grid-cols-12 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      <div className="col-span-4">Email</div>
+                      <div className="col-span-2">Role</div>
+                      <div className="col-span-3">Tenant</div>
+                      <div className="col-span-2">Last login</div>
+                      <div className="col-span-1">Actions</div>
+                    </div>
+                    <div className="divide-y divide-slate-200 bg-white">
+                      {users
+                        .filter((u) =>
+                          userSearch ? u.email.toLowerCase().includes(userSearch.toLowerCase()) : true
+                        )
+                        .map((u) => (
+                          <div key={u.id} className="grid grid-cols-12 items-center gap-3 px-4 py-3 text-sm">
+                            <div className="col-span-4">
+                              <p className="font-semibold text-slate-900">{u.email}</p>
+                              <p className="text-xs text-slate-500">ID: {u.id}</p>
+                            </div>
+                            <div className="col-span-2 text-slate-700">{u.role}</div>
+                            <div className="col-span-3 text-slate-700">{u.tenant_name ?? '—'}</div>
+                            <div className="col-span-2 text-slate-700">{u.last_login_at ?? '—'}</div>
+                            <div className="col-span-1 flex gap-1">
+                              <Button size="sm" variant="ghost" disabled>
+                                View
+                              </Button>
+                              {u.status === 'active' ? (
+                                <Button size="sm" variant="destructive" disabled>
+                                  <UserMinus className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="secondary" disabled>
+                                  <UserPlus className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -413,8 +597,49 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Manage subscription plans and per-tenant billing.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  Plan configuration and tenant billing details will appear here.
+                {plansError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {plansError}
+                  </div>
+                )}
+                {plansLoading ? (
+                  <div className="space-y-2">
+                    {[0, 1].map((idx) => (
+                      <div key={`plan-skel-${idx}`} className="grid grid-cols-6 gap-3 rounded-md border p-3">
+                        <Skeleton className="col-span-2 h-4" />
+                        <Skeleton className="col-span-1 h-4" />
+                        <Skeleton className="col-span-1 h-4" />
+                        <Skeleton className="col-span-2 h-4" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-lg border border-slate-200">
+                    <div className="grid grid-cols-6 bg-slate-50 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      <div className="col-span-2">Plan</div>
+                      <div className="col-span-1">Monthly</div>
+                      <div className="col-span-1">Yearly</div>
+                      <div className="col-span-2">Features</div>
+                    </div>
+                    <div className="divide-y divide-slate-200 bg-white">
+                      {plans.map((p) => (
+                        <div key={p.id} className="grid grid-cols-6 items-center gap-3 px-4 py-3 text-sm">
+                          <div className="col-span-2">
+                            <p className="font-semibold text-slate-900">{p.name}</p>
+                            <p className="text-xs text-slate-500">AI tokens: {p.included_ai_tokens}</p>
+                          </div>
+                          <div className="col-span-1 text-slate-700">€{p.monthly_price_eur}</div>
+                          <div className="col-span-1 text-slate-700">€{p.yearly_price_eur}</div>
+                          <div className="col-span-2 text-slate-700 text-xs">
+                            {p.features?.length ? p.features.join(', ') : '—'}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="mt-3 rounded-md border border-dashed border-slate-200 p-3 text-sm text-slate-600">
+                  Tenant billing detail and resync actions will appear here.
                 </div>
               </CardContent>
             </Card>
@@ -427,8 +652,52 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Configure PayPal credentials and monitor webhooks.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  PayPal API configuration and webhook monitoring will appear here.
+                {paypalError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {paypalError}
+                  </div>
+                )}
+                <div className="rounded-md border border-slate-200 p-3 text-sm">
+                  {paypalLoading ? (
+                    <Skeleton className="h-16 w-full" />
+                  ) : (
+                    <>
+                      <p className="font-semibold text-slate-900">Mode: {paypalConfig?.mode ?? 'n/a'}</p>
+                      <p className="text-slate-700">Client ID: {paypalConfig?.client_id_masked ?? '—'}</p>
+                      <p className="text-slate-700">Webhook ID: {paypalConfig?.webhook_id ?? '—'}</p>
+                      <div className="mt-2 flex gap-2">
+                        <Button size="sm" variant="secondary" disabled>
+                          Save
+                        </Button>
+                        <Button size="sm" variant="secondary" disabled>
+                          Test connection
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-800">Webhook events</p>
+                  <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
+                    <div className="grid grid-cols-5 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                      <div>ID</div>
+                      <div>Type</div>
+                      <div>Status</div>
+                      <div>Received</div>
+                      <div>Message</div>
+                    </div>
+                    <div className="divide-y divide-slate-200 bg-white">
+                      {paypalEvents.map((e) => (
+                        <div key={e.event_id} className="grid grid-cols-5 gap-2 px-3 py-2 text-xs text-slate-700">
+                          <div className="truncate">{e.event_id}</div>
+                          <div>{e.event_type}</div>
+                          <div>{e.status}</div>
+                          <div>{formatDate(e.received_at)}</div>
+                          <div className="truncate">{e.message ?? '—'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -441,9 +710,26 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Monitor AI token usage and set per-tenant limits.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  AI usage summaries and limit controls will appear here.
-                </div>
+                {aiError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {aiError}
+                  </div>
+                )}
+                {aiLoading ? (
+                  <Skeleton className="h-24 w-full" />
+                ) : (
+                  <div className="rounded-md border border-slate-200 p-3 text-sm">
+                    <div className="flex flex-wrap gap-4 text-sm text-slate-800">
+                      <span>24h: {aiUsage?.tokens_24h ?? 0} tokens</span>
+                      <span>7d: {aiUsage?.tokens_7d ?? 0} tokens</span>
+                      <span>30d: {aiUsage?.tokens_30d ?? 0} tokens</span>
+                      <span>Cost est: €{aiUsage?.cost_eur_estimate ?? 0}</span>
+                    </div>
+                    <div className="mt-3 rounded-md border border-dashed border-slate-200 p-3 text-sm text-slate-600">
+                      Per-tenant usage and limit controls will appear here.
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -455,8 +741,64 @@ const PlatformAdminPage: React.FC = () => {
                 <CardDescription>Inspect platform logs and background jobs.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-                  Log streams and job status dashboards will appear here.
+                {logsError && (
+                  <div className="mb-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {logsError}
+                  </div>
+                )}
+                <div className="overflow-hidden rounded-lg border border-slate-200">
+                  <div className="grid grid-cols-5 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600">
+                    <div>Time</div>
+                    <div>Level</div>
+                    <div>Service</div>
+                    <div>Tenant</div>
+                    <div>Message</div>
+                  </div>
+                  <div className="divide-y divide-slate-200 bg-white text-xs">
+                    {logsLoading ? (
+                      <div className="p-3">
+                        <Skeleton className="h-4 w-full" />
+                      </div>
+                    ) : logs.length === 0 ? (
+                      <div className="p-3 text-slate-600">No logs.</div>
+                    ) : (
+                      logs.map((log, idx) => (
+                        <div key={`${log.timestamp}-${idx}`} className="grid grid-cols-5 gap-2 px-3 py-2">
+                          <div>{formatDate(log.timestamp)}</div>
+                          <div>{log.level}</div>
+                          <div>{log.service}</div>
+                          <div>{log.tenant_id ?? '—'}</div>
+                          <div className="truncate">{log.message}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm font-semibold text-slate-800">Jobs</p>
+                  <div className="mt-2 grid gap-2 md:grid-cols-3">
+                    {jobs.map((job) => (
+                      <Card key={job.name}>
+                        <CardHeader>
+                          <CardTitle className="text-sm">{job.name}</CardTitle>
+                          <CardDescription className="text-xs">
+                            Last run: {job.last_run ? formatDate(job.last_run) : 'n/a'}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="text-sm">
+                          <div className="flex items-center gap-2">
+                            {job.status === 'ok' ? (
+                              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Ban className="h-4 w-4 text-rose-600" />
+                            )}
+                            <span className="font-semibold text-slate-900">{job.status}</span>
+                          </div>
+                          <p className="text-xs text-slate-600">{job.message ?? '—'}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
