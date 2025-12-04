@@ -1,12 +1,12 @@
 export type PlatformOverviewResponse = {
-  tenants_total: number;
-  users_total: number;
-  dsr_total: number;
-  dpia_total: number;
+  total_tenants: number;
+  total_users: number;
+  total_dsrs: number;
+  total_dpias: number;
 };
 
 export type PlatformTenantListItem = {
-  id: string | number;
+  id: number;
   name: string;
   plan: string;
   status: string;

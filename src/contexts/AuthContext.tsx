@@ -34,6 +34,13 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+const platformOwnerEmailSet = new Set(
+  (import.meta.env.VITE_PLATFORM_OWNER_EMAILS ?? 'owner1@aura-gdpr.se,admin@aura-gdpr.se')
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,12 +51,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isPlatformOwner, setIsPlatformOwner] = useState<boolean>(false);
 
   const normalizeUser = useCallback((raw: any, fallbackEmail?: string): User => {
+    const normalizedEmail = (raw?.email ?? fallbackEmail ?? '').toLowerCase();
+    const emailIsPlatformOwner = normalizedEmail ? platformOwnerEmailSet.has(normalizedEmail) : false;
     return {
       id: raw?.id ?? raw?.user_id,
-      email: raw?.email ?? fallbackEmail ?? '',
+      email: normalizedEmail || fallbackEmail || '',
       tenantId: raw?.tenantId ?? raw?.tenant_id,
       role: raw?.role,
-      isPlatformOwner: Boolean(raw?.isPlatformOwner ?? raw?.is_platform_owner ?? raw?.role === 'platform_owner'),
+      isPlatformOwner: Boolean(
+        raw?.isPlatformOwner || raw?.is_platform_owner || raw?.role === 'platform_owner' || emailIsPlatformOwner
+      ),
     };
   }, []);
 

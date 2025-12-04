@@ -43,6 +43,7 @@ import { useOnboarding } from '@/contexts/OnboardingContext';
 import OnboardingPage from '@/features/onboarding/OnboardingPage';
 import PublicDsrFormPage from '@/pages/public/PublicDsrFormPage';
 import PlatformOwnerAdminPage from '@/pages/PlatformOwnerAdminPage';
+import PlatformAdminPage from '@/pages/admin/PlatformAdminPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -90,7 +91,7 @@ const AppRoutes = () => (
       path="/admin"
       element={
         <ProtectedRoute>
-          <PlatformOwnerAdminPage />
+          <PlatformAdminPage />
         </ProtectedRoute>
       }
     />

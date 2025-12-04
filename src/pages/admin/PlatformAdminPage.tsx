@@ -8,6 +8,13 @@ import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { PlatformOverviewResponse, PlatformTenantListItem } from '@/types/admin';
 
+const platformOwnerEmailSet = new Set(
+  (import.meta.env.VITE_PLATFORM_OWNER_EMAILS ?? 'owner1@aura-gdpr.se,admin@aura-gdpr.se')
+    .split(',')
+    .map((e: string) => e.trim().toLowerCase())
+    .filter(Boolean)
+);
+
 const formatDate = (value?: string) => {
   if (!value) return '--';
   const date = new Date(value);
@@ -32,7 +39,7 @@ const StatCard: React.FC<{ title: string; value: number | string; icon: React.Re
 );
 
 const PlatformAdminPage: React.FC = () => {
-  const { user } = useAuth() as { user?: { email?: string } };
+  const { user } = useAuth() as { user?: { email?: string; isPlatformOwner?: boolean } };
   const { toast } = useToast();
   const [overview, setOverview] = React.useState<PlatformOverviewResponse | null>(null);
   const [tenants, setTenants] = React.useState<PlatformTenantListItem[]>([]);
@@ -40,7 +47,8 @@ const PlatformAdminPage: React.FC = () => {
   const [error, setError] = React.useState<string | null>(null);
   const [accessDenied, setAccessDenied] = React.useState(false);
 
-  const isPlatformAdmin = user?.email?.toLowerCase() === 'admin@aura-gdpr.se';
+  const emailNormalized = user?.email?.toLowerCase() ?? '';
+  const isPlatformAdmin = Boolean(user?.isPlatformOwner || platformOwnerEmailSet.has(emailNormalized));
 
   React.useEffect(() => {
     if (!isPlatformAdmin) return;
@@ -128,22 +136,22 @@ const PlatformAdminPage: React.FC = () => {
               <>
                 <StatCard
                   title="Tenants total"
-                  value={overview?.tenants_total ?? 0}
+                  value={overview?.total_tenants ?? 0}
                   icon={<Building2 className="h-5 w-5 text-slate-500" />}
                 />
                 <StatCard
                   title="Users total"
-                  value={overview?.users_total ?? 0}
+                  value={overview?.total_users ?? 0}
                   icon={<Users className="h-5 w-5 text-slate-500" />}
                 />
                 <StatCard
                   title="DSRs total"
-                  value={overview?.dsr_total ?? 0}
+                  value={overview?.total_dsrs ?? 0}
                   icon={<Inbox className="h-5 w-5 text-slate-500" />}
                 />
                 <StatCard
                   title="DPIAs total"
-                  value={overview?.dpia_total ?? 0}
+                  value={overview?.total_dpias ?? 0}
                   icon={<FileSignature className="h-5 w-5 text-slate-500" />}
                 />
               </>
