@@ -29,6 +29,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<User | undefined>;
   register: (email: string, password: string) => Promise<User | undefined>;
   logout: () => void;
+  isPlatformOwner: boolean;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -40,12 +41,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUserState] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isPlatformOwner, setIsPlatformOwner] = useState<boolean>(false);
+
+  const computePlatformOwner = (nextUser?: User | null) => nextUser?.role === 'platform_owner';
 
   const setSession = useCallback((tokens: { accessToken: string; refreshToken: string }, nextUser?: User) => {
     setTokens(tokens.accessToken, tokens.refreshToken);
     if (nextUser) {
       setUser(nextUser);
       setUserState(nextUser);
+      setIsPlatformOwner(computePlatformOwner(nextUser));
     }
     setAccessToken(tokens.accessToken);
     setIsAuthenticated(true);
@@ -58,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setUser(res.data);
     setUserState(res.data);
+    setIsPlatformOwner(computePlatformOwner(res.data));
     return res.data;
   }, []);
 
@@ -67,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserState(null);
     setAccessToken(null);
     setIsAuthenticated(false);
+    setIsPlatformOwner(false);
     if (location.pathname.startsWith('/app') || location.pathname.startsWith('/onboarding')) {
       navigate('/login', { replace: true });
     }
@@ -106,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAccessToken(storedAccess);
         if (storedUser) {
           setUserState(storedUser);
+          setIsPlatformOwner(computePlatformOwner(storedUser));
         }
         setIsAuthenticated(true);
         try {
@@ -138,8 +146,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             id: res.data.user_id,
           };
         setSession(tokens, fallbackUser);
+        const platformOwner = computePlatformOwner(fallbackUser);
+        setIsPlatformOwner(platformOwner);
         toast({ title: 'Login Successful', description: 'Welcome back!' });
-        navigate('/app/dashboard', { replace: true });
+        navigate(platformOwner ? '/admin' : '/app/dashboard', { replace: true });
         return fallbackUser;
       } catch (error: any) {
         const message =
@@ -177,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, isAuthenticated, login, register, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, isAuthenticated, isPlatformOwner, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -12,6 +12,7 @@ import { useOnboarding } from '@/contexts/OnboardingContext';
 import { useUserProgress } from '@/contexts/UserProgressContext';
 import { useSystemStatus } from '@/contexts/SystemContext';
 import useAnalyticsEvent from '@/hooks/useAnalyticsEvent';
+import { useAuth } from '@/contexts/AuthContext';
 
 type Invite = {
   email: string;
@@ -27,6 +28,7 @@ const OnboardingPage: React.FC = () => {
   const { state, loading, completeOnboarding } = useOnboarding();
   const { progress, markComplete } = useUserProgress();
   const { demoMode } = useSystemStatus();
+  const { isPlatformOwner } = useAuth();
   const errorMessage = (err: unknown) => (err instanceof Error ? err.message : 'Please try again.');
 
   const [organizationName, setOrganizationName] = React.useState('');
@@ -56,6 +58,12 @@ const OnboardingPage: React.FC = () => {
       navigate('/app/dashboard', { replace: true });
     }
   }, [navigate, state.completed]);
+
+  React.useEffect(() => {
+    if (isPlatformOwner) {
+      navigate('/admin', { replace: true });
+    }
+  }, [isPlatformOwner, navigate]);
 
   const handleSaveOrganization = async () => {
     setBusyStep('organization');
