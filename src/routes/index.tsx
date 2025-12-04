@@ -96,6 +96,14 @@ const AppRoutes = () => (
       }
     />
     <Route
+      path="/platform-admin"
+      element={
+        <ProtectedRoute>
+          <PlatformAdminPage />
+        </ProtectedRoute>
+      }
+    />
+    <Route
       path="/onboarding"
       element={
         <ProtectedRoute>
