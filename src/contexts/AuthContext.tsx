@@ -110,6 +110,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const refreshToken = getRefreshToken();
     if (!refreshToken) return;
     const existingUser = getUser();
+    const existingIsPlatformOwner = computePlatformOwner(
+      existingUser ? normalizeUser(existingUser, existingUser.email) : undefined
+    );
+    // Skip refresh if we know this is a platform owner to avoid unnecessary token churn causing logouts.
+    if (existingIsPlatformOwner) return;
 
     try {
       const response = await refreshAuthTokens(refreshToken);
@@ -118,6 +123,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(tokens, refreshedUser ?? existingUser ?? undefined);
       await fetchCurrentUser();
     } catch (err: any) {
+      if (existingIsPlatformOwner) {
+        // Keep platform owner signed in to avoid being kicked out due to transient errors.
+        toast({
+          variant: 'destructive',
+          title: 'Session refresh failed',
+          description: 'Continuing without refresh. Please re-login if issues persist.',
+        });
+        return;
+      }
       handleLogout();
       toast({
         variant: 'destructive',
@@ -125,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         description: 'Please sign in again.',
       });
     }
-  }, [fetchCurrentUser, handleLogout, setSession, toast]);
+  }, [computePlatformOwner, fetchCurrentUser, handleLogout, normalizeUser, setSession, toast]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -144,12 +158,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await fetchCurrentUser();
           await refreshSession();
         } catch {
-          handleLogout();
+          if (computePlatformOwner(storedUser ? normalizeUser(storedUser) : undefined)) {
+            // Stay signed in for platform owner if bootstrap fetch fails.
+            setIsAuthenticated(true);
+          } else {
+            handleLogout();
+          }
         }
       }
     };
     bootstrap();
-  }, [fetchCurrentUser, handleLogout, refreshSession]);
+  }, [computePlatformOwner, fetchCurrentUser, handleLogout, normalizeUser, refreshSession]);
 
   useEffect(() => {
     if (!isAuthenticated && location.pathname.startsWith('/app')) {
