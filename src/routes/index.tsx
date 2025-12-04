@@ -42,6 +42,7 @@ import ContactPage from '@/features/marketing/ContactPage';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import OnboardingPage from '@/features/onboarding/OnboardingPage';
 import PublicDsrFormPage from '@/pages/public/PublicDsrFormPage';
+import PlatformOwnerAdminPage from '@/pages/PlatformOwnerAdminPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
@@ -85,6 +86,14 @@ const AppRoutes = () => (
     <Route path="/public/dsr/:publicKey" element={<PublicDsrFormPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/register" element={<RegisterPage />} />
+    <Route
+      path="/admin"
+      element={
+        <ProtectedRoute>
+          <PlatformOwnerAdminPage />
+        </ProtectedRoute>
+      }
+    />
     <Route
       path="/onboarding"
       element={

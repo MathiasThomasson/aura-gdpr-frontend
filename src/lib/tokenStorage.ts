@@ -7,6 +7,7 @@ export type StoredUser = {
   role?: string;
   tenantId?: number;
   id?: number;
+  isPlatformOwner?: boolean;
   [key: string]: unknown;
 };
 

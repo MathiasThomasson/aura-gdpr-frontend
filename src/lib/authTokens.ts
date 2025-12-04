@@ -5,6 +5,7 @@ export type User = StoredUser & {
   id?: number;
   tenantId?: number;
   role?: string;
+  isPlatformOwner?: boolean;
 };
 
 export type AuthResponse = {
@@ -16,6 +17,7 @@ export type AuthResponse = {
   tenant_id?: number;
   role?: string;
   email?: string;
+  is_platform_owner?: boolean;
 };
 
 export type LoginResponse = AuthResponse & {
@@ -57,6 +59,7 @@ const buildUserFromPayload = (payload: AuthResponse, fallbackEmail?: string): Us
     tenantId: payload.tenant_id,
     role: payload.role,
     email: payload.email ?? fallbackEmail ?? '',
+    isPlatformOwner: Boolean(payload.is_platform_owner),
   };
 };
 

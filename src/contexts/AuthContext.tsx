@@ -43,7 +43,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isPlatformOwner, setIsPlatformOwner] = useState<boolean>(false);
 
-  const computePlatformOwner = (nextUser?: User | null) => nextUser?.role === 'platform_owner';
+  const normalizeUser = useCallback((raw: any, fallbackEmail?: string): User => {
+    return {
+      id: raw?.id ?? raw?.user_id,
+      email: raw?.email ?? fallbackEmail ?? '',
+      tenantId: raw?.tenantId ?? raw?.tenant_id,
+      role: raw?.role,
+      isPlatformOwner: Boolean(raw?.isPlatformOwner ?? raw?.is_platform_owner ?? raw?.role === 'platform_owner'),
+    };
+  }, []);
+
+  const computePlatformOwner = (nextUser?: User | null) =>
+    Boolean(nextUser?.isPlatformOwner || nextUser?.role === 'platform_owner');
 
   const setSession = useCallback((tokens: { accessToken: string; refreshToken: string }, nextUser?: User) => {
     setTokens(tokens.accessToken, tokens.refreshToken);
@@ -61,11 +72,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!res.data) {
       throw new Error('Failed to load user');
     }
-    setUser(res.data);
-    setUserState(res.data);
-    setIsPlatformOwner(computePlatformOwner(res.data));
-    return res.data;
-  }, []);
+    const normalized = normalizeUser(res.data);
+    setUser(normalized);
+    setUserState(normalized);
+    setIsPlatformOwner(computePlatformOwner(normalized));
+    return normalized;
+  }, [computePlatformOwner, normalizeUser]);
 
   const handleLogout = useCallback(() => {
     clearTokens();
@@ -112,8 +124,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedAccess && storedRefresh) {
         setAccessToken(storedAccess);
         if (storedUser) {
-          setUserState(storedUser);
-          setIsPlatformOwner(computePlatformOwner(storedUser));
+          const normalizedStored = normalizeUser(storedUser);
+          setUserState(normalizedStored);
+          setIsPlatformOwner(computePlatformOwner(normalizedStored));
         }
         setIsAuthenticated(true);
         try {
@@ -139,12 +152,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await api.post<LoginResponse>('/auth/login', { email, password });
         const { tokens, user: mappedUser } = mapAuthResponse(res.data, email);
         const fallbackUser =
-          mappedUser ?? {
+          mappedUser ??
+          normalizeUser({
             email,
             role: res.data.role,
-            tenantId: res.data.tenant_id,
-            id: res.data.user_id,
-          };
+            tenant_id: res.data.tenant_id,
+            user_id: res.data.user_id,
+            is_platform_owner: res.data.is_platform_owner,
+          });
         setSession(tokens, fallbackUser);
         const platformOwner = computePlatformOwner(fallbackUser);
         setIsPlatformOwner(platformOwner);
