@@ -541,11 +541,24 @@ const PlatformAdminPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase text-slate-500">Next billing</p>
-                      <p className="font-semibold text-slate-900">{formatDate(selectedTenant.next_billing_date)}</p>
+                      <p className="font-semibold text-slate-900">
+                        {formatDate(selectedTenant.next_billing_date)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">Contact email</p>
+                      <p className="font-semibold text-slate-900">{selectedTenant.contact_email ?? '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase text-slate-500">PayPal subscription</p>
+                      <p className="font-semibold text-slate-900">{selectedTenant.paypal_subscription_id ?? '—'}</p>
                     </div>
                   </div>
                   <div className="rounded-md border border-dashed border-slate-200 p-3 text-sm text-slate-600">
-                    Tenant-level actions (impersonate, suspend, billing) will be added here.
+                    Tenant-level actions (impersonate, suspend, billing) will be added here. Feature flags:{' '}
+                    {selectedTenant.feature_flags
+                      ? JSON.stringify(selectedTenant.feature_flags)
+                      : 'n/a'}
                   </div>
                 </>
               ) : (

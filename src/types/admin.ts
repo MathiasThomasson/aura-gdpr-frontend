@@ -24,4 +24,8 @@ export type PlatformTenantListItem = {
   created_at: string;
   users?: number;
   next_billing_date?: string | null;
+  contact_email?: string | null;
+  paypal_subscription_id?: string | null;
+  feature_flags?: Record<string, boolean>;
+  ai_usage?: { tokens?: number; calls?: number };
 };
